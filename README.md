@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/dracoon/dracoon-java-crypto-sdk.svg?branch=master)](https://travis-ci.org/dracoon/)
 # Dracoon Java Crypto SDK
 
 A library which implements the client-side encryption of Dracoon.
