@@ -7,7 +7,7 @@
 
     <groupId>com.dracoon</groupId>
     <artifactId>dracoon-crypto-sdk</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
 
     <name>dracoon-crypto-sdk</name>
     <description>A library which implements the client-side encryption of Dracoon.</description>
