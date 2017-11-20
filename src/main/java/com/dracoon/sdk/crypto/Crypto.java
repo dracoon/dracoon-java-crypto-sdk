@@ -140,6 +140,7 @@ public class Crypto {
         OutputEncryptor encryptor;
         try {
             encryptor = new JceOpenSSLPKCS8EncryptorBuilder(PKCS8Generator.AES_256_CBC)
+                    .setProvider("BC")
                     .setIterationCount(HASH_ITERATION_COUNT)
                     .setPasssword(password.toCharArray())
                     .build();
