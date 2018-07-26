@@ -31,7 +31,7 @@ Gradle: Add this dependency to your build.gradle:
 compile 'com.dracoon:dracoon-crypto-sdk:1.0.0'
 ```
 
-JAR import: The latest JAR can be found [here](https://github.com/dracoon/sdk-crypto-java/releases).
+JAR import: The latest JAR can be found [here](https://github.com/dracoon/dracoon-java-crypto-sdk/releases).
 
 Note that you also need to include the following dependencies:
 1. Bouncy Castle Provider: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
