@@ -32,11 +32,40 @@ Gradle: Add this dependency to your build.gradle:
 compile 'com.dracoon:dracoon-crypto-sdk:1.0.1'
 ```
 
-JAR import: The latest JAR can be found [here](https://github.com/dracoon/dracoon-java-crypto-sdk/releases).
+JAR import: The latest JAR can be found [here](
+https://github.com/dracoon/dracoon-java-crypto-sdk/releases).
 
 Note that you also need to include the following dependencies:
 1. Bouncy Castle Provider: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
 2. Bouncy Castle PKIX/CMS/...: https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on
+
+#### Download for Android
+
+The Android platform unfortunately ships with a cut-down version of Bouncy Castle. This makes it
+difficult to use libraries that have an updated version of Bouncy Castle as a dependency.
+
+To solve this issue, there is a second version of the Crypto SDK which uses Spongy Castle.
+
+Maven: Add this dependency to your pom.xml:
+```xml
+<dependency>
+    <groupId>com.dracoon</groupId>
+    <artifactId>dracoon-android-crypto-sdk</artifactId>
+    <version>1.0.1</version>
+</dependency>
+```
+
+Gradle: Add this dependency to your build.gradle:
+```groovy
+compile 'com.dracoon:dracoon-android-crypto-sdk:1.0.1'
+```
+
+JAR import: The latest JAR can be found [here](
+https://github.com/dracoon/dracoon-java-crypto-sdk/releases).
+
+Note that you also need to include the following dependencies:
+1. Spongy Castle Provider: https://mvnrepository.com/artifact/com.madgag.spongycastle/prov
+2. Spongy Castle PKIX/CMS/...: https://mvnrepository.com/artifact/com.madgag.spongycastle/pkix
 
 #### Java JCE Setup
 
