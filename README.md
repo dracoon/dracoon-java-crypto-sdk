@@ -6,8 +6,9 @@ A library which implements the client-side encryption of Dracoon.
 
 # Introduction
 
-Later, a link to the Dracoon client-side encryption white paper will be added here. This document
-will describe the client-side encryption in detail. 
+A document which describes the client-side encryption in detail can be found here:
+
+https://support.dracoon.com/hc/en-us/articles/360000986345 
 
 # Setup
 
