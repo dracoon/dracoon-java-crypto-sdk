@@ -1,6 +1,6 @@
 package com.dracoon.sdk.crypto;
 
-import org.bouncycastle.util.encoders.Base64;
+import org.spongycastle.util.encoders.Base64;
 
 /**
  * Provides helper methods.

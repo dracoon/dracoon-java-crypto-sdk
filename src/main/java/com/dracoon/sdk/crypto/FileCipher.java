@@ -4,11 +4,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import org.bouncycastle.crypto.InvalidCipherTextException;
-import org.bouncycastle.crypto.engines.AESFastEngine;
-import org.bouncycastle.crypto.modes.GCMBlockCipher;
-import org.bouncycastle.crypto.params.AEADParameters;
-import org.bouncycastle.crypto.params.KeyParameter;
+import org.spongycastle.crypto.InvalidCipherTextException;
+import org.spongycastle.crypto.engines.AESFastEngine;
+import org.spongycastle.crypto.modes.GCMBlockCipher;
+import org.spongycastle.crypto.params.AEADParameters;
+import org.spongycastle.crypto.params.KeyParameter;
 
 import com.dracoon.sdk.crypto.model.PlainFileKey;
 

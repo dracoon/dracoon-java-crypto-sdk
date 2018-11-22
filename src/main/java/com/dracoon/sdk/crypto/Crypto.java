@@ -25,22 +25,22 @@ import javax.crypto.spec.PSource;
 
 import com.dracoon.sdk.crypto.model.EncryptedFileKey;
 import com.dracoon.sdk.crypto.model.UserKeyPair;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.openssl.PEMException;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.PKCS8Generator;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
-import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
-import org.bouncycastle.openssl.jcajce.JcaPKCS8Generator;
-import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
-import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8EncryptorBuilder;
-import org.bouncycastle.operator.InputDecryptorProvider;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.OutputEncryptor;
-import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
-import org.bouncycastle.pkcs.PKCSException;
-import org.bouncycastle.util.io.pem.PemGenerationException;
+import org.spongycastle.asn1.pkcs.PrivateKeyInfo;
+import org.spongycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.spongycastle.openssl.PEMException;
+import org.spongycastle.openssl.PEMParser;
+import org.spongycastle.openssl.PKCS8Generator;
+import org.spongycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.spongycastle.openssl.jcajce.JcaPEMWriter;
+import org.spongycastle.openssl.jcajce.JcaPKCS8Generator;
+import org.spongycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
+import org.spongycastle.openssl.jcajce.JceOpenSSLPKCS8EncryptorBuilder;
+import org.spongycastle.operator.InputDecryptorProvider;
+import org.spongycastle.operator.OperatorCreationException;
+import org.spongycastle.operator.OutputEncryptor;
+import org.spongycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
+import org.spongycastle.pkcs.PKCSException;
+import org.spongycastle.util.io.pem.PemGenerationException;
 
 import com.dracoon.sdk.crypto.model.PlainFileKey;
 import com.dracoon.sdk.crypto.model.UserPrivateKey;
@@ -61,7 +61,7 @@ import com.dracoon.sdk.crypto.model.UserPublicKey;
 public class Crypto {
 
     static {
-        Security.insertProviderAt(new org.bouncycastle.jce.provider.BouncyCastleProvider(), 1);
+        Security.insertProviderAt(new org.spongycastle.jce.provider.BouncyCastleProvider(), 1);
     }
 
     private static final int HASH_ITERATION_COUNT = 10000;
@@ -140,7 +140,7 @@ public class Crypto {
         OutputEncryptor encryptor;
         try {
             encryptor = new JceOpenSSLPKCS8EncryptorBuilder(PKCS8Generator.AES_256_CBC)
-                    .setProvider("BC")
+                    .setProvider("SC")
                     .setIterationCount(HASH_ITERATION_COUNT)
                     .setPasssword(password.toCharArray())
                     .build();
@@ -188,7 +188,7 @@ public class Crypto {
             if (obj instanceof PKCS8EncryptedPrivateKeyInfo) {
                 PKCS8EncryptedPrivateKeyInfo epkInfo = (PKCS8EncryptedPrivateKeyInfo) obj;
                 InputDecryptorProvider decryptor = new JceOpenSSLPKCS8DecryptorProviderBuilder()
-                        .setProvider("BC")
+                        .setProvider("SC")
                         .build(password.toCharArray());
                 pkInfo = epkInfo.decryptPrivateKeyInfo(decryptor);
             } else {
@@ -204,7 +204,7 @@ public class Crypto {
         }
 
         try {
-            JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
+            JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("SC");
             return converter.getPrivateKey(pkInfo);
         } catch (PEMException e) {
             throw new CryptoSystemException("Could not decrypted private key. PEM decoding failed.",
@@ -248,7 +248,7 @@ public class Crypto {
         }
 
         try {
-            JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
+            JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("SC");
             return converter.getPublicKey(pkInfo);
         } catch (PEMException e) {
             throw new CryptoSystemException("Could not decode public key. PEM decoding failed.", e);
