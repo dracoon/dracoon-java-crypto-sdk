@@ -20,10 +20,10 @@ public class FileDecryptionTest {
     @Test
     public void testDecryptSingleBlock_Success() throws BadFileException, IllegalArgumentException,
             IllegalStateException, InvalidFileKeyException, IOException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key.json");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key.json");
         byte[] ft = CryptoUtils.stringToByteArray(pfk.getTag());
-        byte[] efc = TestUtils.readFile("/files/enc_file.txt");
-        byte[] pfc = TestUtils.readFile("/files/plain_file.txt");
+        byte[] efc = TestUtils.readFile("files/enc_file.txt");
+        byte[] pfc = TestUtils.readFile("files/plain_file.txt");
 
         EncryptedDataContainer testEdc = new EncryptedDataContainer(efc, ft);
         PlainDataContainer testPdc = testDecryptSingleBlock(pfk, testEdc);
@@ -35,9 +35,9 @@ public class FileDecryptionTest {
     public void testDecryptSingleBlock_ModifiedContent() throws BadFileException,
             IllegalArgumentException, IllegalStateException, InvalidFileKeyException, IOException,
             CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key.json");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key.json");
         byte[] ft = CryptoUtils.stringToByteArray(pfk.getTag());
-        byte[] efc = TestUtils.readFile("/files/enc_file_modified.txt");
+        byte[] efc = TestUtils.readFile("files/enc_file_modified.txt");
 
         EncryptedDataContainer testEdc = new EncryptedDataContainer(efc, ft);
         testDecryptSingleBlock(pfk, testEdc);
@@ -46,9 +46,9 @@ public class FileDecryptionTest {
     @Test(expected=BadFileException.class)
     public void testDecryptSingleBlock_ModifiedTag() throws BadFileException, IllegalArgumentException,
             IllegalStateException, InvalidFileKeyException, IOException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key_bad_tag.json");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key_bad_tag.json");
         byte[] ft = CryptoUtils.stringToByteArray(pfk.getTag());
-        byte[] efc = TestUtils.readFile("/files/enc_file.txt");
+        byte[] efc = TestUtils.readFile("files/enc_file.txt");
 
         EncryptedDataContainer testEdc = new EncryptedDataContainer(efc, ft);
         testDecryptSingleBlock(pfk, testEdc);
@@ -57,9 +57,9 @@ public class FileDecryptionTest {
     @Test(expected=BadFileException.class)
     public void testDecryptSingleBlock_ModifiedKey() throws BadFileException, IllegalArgumentException,
             IllegalStateException, InvalidFileKeyException, IOException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key_bad_key.json");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key_bad_key.json");
         byte[] ft = CryptoUtils.stringToByteArray(pfk.getTag());
-        byte[] efc = TestUtils.readFile("/files/enc_file.txt");
+        byte[] efc = TestUtils.readFile("files/enc_file.txt");
 
         EncryptedDataContainer testEdc = new EncryptedDataContainer(efc, ft);
         testDecryptSingleBlock(pfk, testEdc);
@@ -68,9 +68,9 @@ public class FileDecryptionTest {
     @Test(expected=BadFileException.class)
     public void testDecryptSingleBlock_ModifiedIv() throws BadFileException, IllegalArgumentException,
             IllegalStateException, InvalidFileKeyException, IOException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key_bad_iv.json");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key_bad_iv.json");
         byte[] ft = CryptoUtils.stringToByteArray(pfk.getTag());
-        byte[] efc = TestUtils.readFile("/files/enc_file.txt");
+        byte[] efc = TestUtils.readFile("files/enc_file.txt");
 
         EncryptedDataContainer testEdc = new EncryptedDataContainer(efc, ft);
         testDecryptSingleBlock(pfk, testEdc);
@@ -99,10 +99,10 @@ public class FileDecryptionTest {
     @Test
     public void testDecryptMultiBlock_Success() throws BadFileException, IllegalArgumentException,
             IllegalStateException, InvalidFileKeyException, IOException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key.json");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key.json");
         byte[] ft = CryptoUtils.stringToByteArray(pfk.getTag());
-        byte[] efc = TestUtils.readFile("/files/enc_file.txt");
-        byte[] pfc = TestUtils.readFile("/files/plain_file.txt");
+        byte[] efc = TestUtils.readFile("files/enc_file.txt");
+        byte[] pfc = TestUtils.readFile("files/plain_file.txt");
 
         FileDecryptionCipher c = Crypto.createFileDecryptionCipher(pfk);
 
@@ -157,7 +157,7 @@ public class FileDecryptionTest {
     public void testDecryptProcessArguments(EncryptedDataContainer edc)
             throws IllegalArgumentException, IllegalStateException, InvalidFileKeyException,
             CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key.json");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key.json");
         FileDecryptionCipher c = Crypto.createFileDecryptionCipher(pfk);
         c.processBytes(edc);
     }
@@ -186,7 +186,7 @@ public class FileDecryptionTest {
     public void testDecryptDoFinalArguments(EncryptedDataContainer edc) throws BadFileException,
             IllegalArgumentException, IllegalStateException, InvalidFileKeyException,
             CryptoSystemException{
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key.json");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key.json");
         FileDecryptionCipher c = Crypto.createFileDecryptionCipher(pfk);
         c.doFinal(edc);
     }

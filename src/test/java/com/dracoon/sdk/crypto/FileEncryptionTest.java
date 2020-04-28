@@ -20,10 +20,10 @@ public class FileEncryptionTest {
     @Test
     public void testEncryptSingleBlock_Success() throws IllegalArgumentException,
             IllegalStateException, InvalidFileKeyException, IOException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key.json");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key.json");
         byte[] ft = CryptoUtils.stringToByteArray(pfk.getTag());
-        byte[] pfc = TestUtils.readFile("/files/plain_file.txt");
-        byte[] efc = TestUtils.readFile("/files/enc_file.txt");
+        byte[] pfc = TestUtils.readFile("files/plain_file.txt");
+        byte[] efc = TestUtils.readFile("files/enc_file.txt");
 
         PlainDataContainer testPdc = new PlainDataContainer(pfc);
         EncryptedDataContainer testEdc = testEncryptSingleBlock(pfk, testPdc);
@@ -35,9 +35,9 @@ public class FileEncryptionTest {
     @Test
     public void testEncryptSingleBlock_DifferentContent() throws IllegalArgumentException,
             IllegalStateException, InvalidFileKeyException, IOException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key.json");
-        byte[] pfc = TestUtils.readFile("/files/plain_file_modified.txt");
-        byte[] efc = TestUtils.readFile("/files/enc_file.txt");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key.json");
+        byte[] pfc = TestUtils.readFile("files/plain_file_modified.txt");
+        byte[] efc = TestUtils.readFile("files/enc_file.txt");
 
         PlainDataContainer testPdc = new PlainDataContainer(pfc);
         EncryptedDataContainer testEdc = testEncryptSingleBlock(pfk, testPdc);
@@ -48,9 +48,9 @@ public class FileEncryptionTest {
     @Test
     public void testEncryptSingleBlock_DifferentTag() throws IllegalArgumentException,
             IllegalStateException, InvalidFileKeyException, IOException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key_bad_tag.json");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key_bad_tag.json");
         byte[] ft = CryptoUtils.stringToByteArray(pfk.getTag());
-        byte[] pfc = TestUtils.readFile("/files/plain_file.txt");
+        byte[] pfc = TestUtils.readFile("files/plain_file.txt");
 
         PlainDataContainer testPdc = new PlainDataContainer(pfc);
         EncryptedDataContainer testEdc = testEncryptSingleBlock(pfk, testPdc);
@@ -61,10 +61,10 @@ public class FileEncryptionTest {
     @Test
     public void testEncryptSingleBlock_DifferentKey() throws IllegalArgumentException,
             IllegalStateException, InvalidFileKeyException, IOException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key_bad_key.json");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key_bad_key.json");
         byte[] ft = CryptoUtils.stringToByteArray(pfk.getTag());
-        byte[] pfc = TestUtils.readFile("/files/plain_file.txt");
-        byte[] efc = TestUtils.readFile("/files/enc_file.txt");
+        byte[] pfc = TestUtils.readFile("files/plain_file.txt");
+        byte[] efc = TestUtils.readFile("files/enc_file.txt");
 
         PlainDataContainer testPdc = new PlainDataContainer(pfc);
         EncryptedDataContainer testEdc = testEncryptSingleBlock(pfk, testPdc);
@@ -76,10 +76,10 @@ public class FileEncryptionTest {
     @Test
     public void testEncryptSingleBlock_DifferentIv() throws IllegalArgumentException,
             IllegalStateException, InvalidFileKeyException, IOException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key_bad_iv.json");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key_bad_iv.json");
         byte[] ft = CryptoUtils.stringToByteArray(pfk.getTag());
-        byte[] pfc = TestUtils.readFile("/files/plain_file.txt");
-        byte[] efc = TestUtils.readFile("/files/enc_file.txt");
+        byte[] pfc = TestUtils.readFile("files/plain_file.txt");
+        byte[] efc = TestUtils.readFile("files/enc_file.txt");
 
         PlainDataContainer testPdc = new PlainDataContainer(pfc);
         EncryptedDataContainer testEdc = testEncryptSingleBlock(pfk, testPdc);
@@ -111,10 +111,10 @@ public class FileEncryptionTest {
     @Test
     public void testEncryptMultiBlock_Success() throws IllegalArgumentException,
             IllegalStateException, InvalidFileKeyException, IOException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key.json");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key.json");
         byte[] ft = CryptoUtils.stringToByteArray(pfk.getTag());
-        byte[] pfc = TestUtils.readFile("/files/plain_file.txt");
-        byte[] efc = TestUtils.readFile("/files/enc_file.txt");
+        byte[] pfc = TestUtils.readFile("files/plain_file.txt");
+        byte[] efc = TestUtils.readFile("files/enc_file.txt");
 
         FileEncryptionCipher c = Crypto.createFileEncryptionCipher(pfk);
 
@@ -164,7 +164,7 @@ public class FileEncryptionTest {
 
     public void testEncryptProcessArguments(PlainDataContainer pdc) throws IllegalArgumentException,
             IllegalStateException, InvalidFileKeyException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "/data/plain_file_key.json");
+        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key.json");
         FileEncryptionCipher c = Crypto.createFileEncryptionCipher(pfk);
         c.processBytes(pdc);
     }

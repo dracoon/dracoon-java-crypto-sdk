@@ -19,7 +19,7 @@ public class TestUtils {
         }
 
         try {
-            InputStream is = ClassLoader.class.getResourceAsStream(fileName);
+            InputStream is = TestUtils.class.getClassLoader().getResourceAsStream(fileName);
             Reader rd = new BufferedReader(new InputStreamReader(is));
 
             T obj = gson.fromJson(rd, clazz);
@@ -39,7 +39,7 @@ public class TestUtils {
         }
 
         try {
-            InputStream is = ClassLoader.class.getResourceAsStream(fileName);
+            InputStream is = TestUtils.class.getClassLoader().getResourceAsStream(fileName);
             Reader in = new InputStreamReader(is, "UTF-8");
 
             StringBuilder sb = new StringBuilder();
