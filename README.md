@@ -23,13 +23,13 @@ Maven: Add this dependency to your pom.xml:
 <dependency>
     <groupId>com.dracoon</groupId>
     <artifactId>dracoon-crypto-sdk</artifactId>
-    <version>1.0.1</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
 Gradle: Add this dependency to your build.gradle:
 ```groovy
-compile 'com.dracoon:dracoon-crypto-sdk:1.0.1'
+compile 'com.dracoon:dracoon-crypto-sdk:2.0.0'
 ```
 
 JAR import: The latest JAR can be found [here](
@@ -51,13 +51,13 @@ Maven: Add this dependency to your pom.xml:
 <dependency>
     <groupId>com.dracoon</groupId>
     <artifactId>dracoon-android-crypto-sdk</artifactId>
-    <version>1.0.1</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
 Gradle: Add this dependency to your build.gradle:
 ```groovy
-compile 'com.dracoon:dracoon-android-crypto-sdk:1.0.1'
+compile 'com.dracoon:dracoon-android-crypto-sdk:2.0.0'
 ```
 
 JAR import: The latest JAR can be found [here](
