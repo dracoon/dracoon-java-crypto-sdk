@@ -14,7 +14,7 @@ https://support.dracoon.com/hc/en-us/articles/360000986345
 
 #### Minimum Requirements
 
-Java 6 or newer
+Java 8 or newer
 
 #### Download
 
@@ -69,17 +69,16 @@ Note that you also need to include the following dependencies:
 
 #### Java JCE Setup
 
-**IMPORTANT FOR JAVA VERSIONS 6 (<191), 7 (<181) and 8 (<162):**
+**IMPORTANT FOR JAVA VERSION 8 (<162):**
 
 You need to install the Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy
 Files. Otherwise you'll get an exception about key length or an exception when parsing PKCS private
 keys.
 
 The Unlimited Strength Jurisdiction Policy File can be found here:
-- Java 6: https://www.oracle.com/technetwork/java/javase/downloads/jce-6-download-429243.html
-- Java 7: https://www.oracle.com/technetwork/java/javase/downloads/jce-7-download-432124.html
 - Java 8: https://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html
 
+For Java 9 and above, the Unlimited Strength Jurisdiction Policy Files are no longer needed.
 (For more information see: https://stackoverflow.com/questions/1179672)
 
 # Example
