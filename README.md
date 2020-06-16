@@ -133,7 +133,7 @@ keep the code as readable as possible.
 
 # Copyright and License
 
-Copyright 2017 Dracoon GmbH. All rights reserved.
+Copyright Dracoon GmbH. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
 compliance with the License. You may obtain a copy of the License at
