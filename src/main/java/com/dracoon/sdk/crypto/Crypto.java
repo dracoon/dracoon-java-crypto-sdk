@@ -68,6 +68,8 @@ public class Crypto {
     private static final int FILE_KEY_SIZE = 32;
     private static final int IV_SIZE = 12;
 
+    private static final String PROP_ALLOW_UNSAFE_INT = "org.bouncycastle.asn1.allow_unsafe_integer";
+
     private Crypto() {
 
     }
@@ -204,11 +206,14 @@ public class Crypto {
         }
 
         try {
+            org.bouncycastle.util.Properties.setThreadOverride(PROP_ALLOW_UNSAFE_INT, true);
             JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
             return converter.getPrivateKey(pkInfo);
         } catch (PEMException e) {
             throw new CryptoSystemException("Could not decrypted private key. PEM decoding failed.",
                     e);
+        } finally {
+            org.bouncycastle.util.Properties.removeThreadOverride(PROP_ALLOW_UNSAFE_INT);
         }
     }
 
@@ -248,10 +253,13 @@ public class Crypto {
         }
 
         try {
+            org.bouncycastle.util.Properties.setThreadOverride(PROP_ALLOW_UNSAFE_INT, true);
             JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
             return converter.getPublicKey(pkInfo);
         } catch (PEMException e) {
             throw new CryptoSystemException("Could not decode public key. PEM decoding failed.", e);
+        } finally {
+            org.bouncycastle.util.Properties.removeThreadOverride(PROP_ALLOW_UNSAFE_INT);
         }
     }
 
