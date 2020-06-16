@@ -109,6 +109,14 @@ public class CryptoTest {
         testCheckUserKeyPair("data/private_key_bad_pem.json", "Pass1234!");
     }
 
+    @Test
+    public void testCheckUserKeyPair_PrivateKeyBadAsn1() throws InvalidKeyPairException,
+            CryptoSystemException {
+        boolean testCheck = testCheckUserKeyPair("data/private_key_bad_asn1.json", "Qwer1234!");
+
+        assertTrue("User key pair check failed!", testCheck);
+    }
+
     @Test(expected=InvalidKeyPairException.class)
     public void testCheckUserKeyPair_PrivateKeyBadValue() throws InvalidFileKeyException,
     InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
