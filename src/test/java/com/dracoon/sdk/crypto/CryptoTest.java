@@ -2,13 +2,12 @@ package com.dracoon.sdk.crypto;
 
 import static org.junit.Assert.*;
 
-import org.junit.Test;
-
 import com.dracoon.sdk.crypto.model.EncryptedFileKey;
 import com.dracoon.sdk.crypto.model.PlainFileKey;
 import com.dracoon.sdk.crypto.model.UserKeyPair;
 import com.dracoon.sdk.crypto.model.UserPrivateKey;
 import com.dracoon.sdk.crypto.model.UserPublicKey;
+import org.junit.Test;
 
 public class CryptoTest {
 
@@ -84,35 +83,38 @@ public class CryptoTest {
     @Test
     public void testCheckUserKeyPair_Success() throws InvalidKeyPairException,
             CryptoSystemException {
-        boolean testCheck = testCheckUserKeyPair("data/private_key.json", "Pass1234!");
+        boolean testCheck = testCheckUserKeyPair("data/private_key.json", "data/public_key.json",
+                "Pass1234!");
 
         assertTrue("User key pair check failed!", testCheck);
     }
 
     // --- Tests for invalid private key ---
 
-    @Test(expected=InvalidKeyPairException.class)
+    @Test(expected=IllegalArgumentException.class)
     public void testCheckUserKeyPair_PrivateKeyNull() throws InvalidFileKeyException,
     InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testCheckUserKeyPair(null, "Pass1234!");
+        testCheckUserKeyPair(null, "data/public_key.json", "Pass1234!");
     }
 
     @Test(expected=InvalidKeyPairException.class)
     public void testCheckUserKeyPair_PrivateKeyBadVersion() throws InvalidFileKeyException,
     InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testCheckUserKeyPair("data/private_key_bad_version.json", "Pass1234!");
+        testCheckUserKeyPair("data/private_key_bad_version.json", "data/public_key.json",
+                "Pass1234!");
     }
 
     @Test(expected=InvalidKeyPairException.class)
     public void testCheckUserKeyPair_PrivateKeyBadPem() throws InvalidFileKeyException,
     InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testCheckUserKeyPair("data/private_key_bad_pem.json", "Pass1234!");
+        testCheckUserKeyPair("data/private_key_bad_pem.json", "data/public_key.json", "Pass1234!");
     }
 
     @Test
     public void testCheckUserKeyPair_PrivateKeyBadAsn1() throws InvalidKeyPairException,
             CryptoSystemException {
-        boolean testCheck = testCheckUserKeyPair("data/private_key_bad_asn1.json", "Qwer1234!");
+        boolean testCheck = testCheckUserKeyPair("data/private_key_bad_asn1.json",
+                "data/public_key.json", "Qwer1234!");
 
         assertTrue("User key pair check failed!", testCheck);
     }
@@ -120,7 +122,7 @@ public class CryptoTest {
     @Test(expected=InvalidKeyPairException.class)
     public void testCheckUserKeyPair_PrivateKeyBadValue() throws InvalidFileKeyException,
     InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testCheckUserKeyPair("data/private_key_bad_value.json", "Pass1234!");
+        testCheckUserKeyPair("data/private_key_bad_value.json", "data/public_key.json", "Pass1234!");
     }
 
     // --- Tests for invalid password ---
@@ -128,7 +130,8 @@ public class CryptoTest {
     @Test
     public void testCheckUserKeyPair_PasswordNull() throws InvalidFileKeyException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        boolean testCheck = testCheckUserKeyPair("data/private_key.json", null);
+        boolean testCheck = testCheckUserKeyPair("data/private_key.json", "data/public_key.json",
+                null);
 
         assertFalse("User key pair check was successful!", testCheck);
     }
@@ -136,17 +139,29 @@ public class CryptoTest {
     @Test
     public void testCheckUserKeyPair_PasswordInvalid() throws InvalidFileKeyException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        boolean testCheck = testCheckUserKeyPair("data/private_key.json", "Invalid-Password");
+        boolean testCheck = testCheckUserKeyPair("data/private_key.json", "data/public_key.json",
+                "Invalid-Password");
 
         assertFalse("User key pair check was successful!", testCheck);
     }
 
+    // --- Tests for invalid public key ---
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testCheckUserKeyPair_PublicKeyNull() throws InvalidFileKeyException,
+            InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
+        testCheckUserKeyPair("data/private_key.json", null, "Pass1234!");
+    }
+
+    // TODO !!!
+
     // --- Test helper method ---
 
-    private boolean testCheckUserKeyPair(String upkFileName, String pw)
+    private boolean testCheckUserKeyPair(String uprkFileName, String upukFileName, String pw)
             throws InvalidKeyPairException, CryptoSystemException {
-        UserKeyPair ukp = new UserKeyPair();
-        ukp.setUserPrivateKey(TestUtils.readData(UserPrivateKey.class, upkFileName));
+        UserPrivateKey uprk = TestUtils.readData(UserPrivateKey.class, uprkFileName);
+        UserPublicKey upuk = TestUtils.readData(UserPublicKey.class, upukFileName);
+        UserKeyPair ukp = new UserKeyPair(uprk, upuk);
         return Crypto.checkUserKeyPair(ukp, pw);
     }
 
@@ -168,10 +183,6 @@ public class CryptoTest {
     }
 
     // --- Tests for invalid file key ---
-
-    // TODO !!!
-
-    // --- Tests for invalid public key ---
 
     // TODO !!!
 

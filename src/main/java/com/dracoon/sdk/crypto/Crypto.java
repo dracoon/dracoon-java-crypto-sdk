@@ -24,7 +24,10 @@ import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
 
 import com.dracoon.sdk.crypto.model.EncryptedFileKey;
+import com.dracoon.sdk.crypto.model.PlainFileKey;
 import com.dracoon.sdk.crypto.model.UserKeyPair;
+import com.dracoon.sdk.crypto.model.UserPrivateKey;
+import com.dracoon.sdk.crypto.model.UserPublicKey;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.openssl.PEMException;
@@ -41,10 +44,6 @@ import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
 import org.bouncycastle.pkcs.PKCSException;
 import org.bouncycastle.util.io.pem.PemGenerationException;
-
-import com.dracoon.sdk.crypto.model.PlainFileKey;
-import com.dracoon.sdk.crypto.model.UserPrivateKey;
-import com.dracoon.sdk.crypto.model.UserPublicKey;
 
 /**
  * This class is the main class of the Dracoon Crypto Library.<br>
@@ -122,19 +121,11 @@ public class Crypto {
         String privateKeyString = encryptPrivateKey(keyPair.getPrivate(), password);
         String publicKeyString = getStringFromPublicKey(keyPair.getPublic());
 
-        UserPrivateKey userPrivateKey = new UserPrivateKey();
-        userPrivateKey.setVersion(version);
-        userPrivateKey.setPrivateKey(privateKeyString);
+        UserPrivateKey userPrivateKey = new UserPrivateKey(version, privateKeyString);
 
-        UserPublicKey userPublicKey = new UserPublicKey();
-        userPublicKey.setVersion(version);
-        userPublicKey.setPublicKey(publicKeyString);
+        UserPublicKey userPublicKey = new UserPublicKey(version, publicKeyString);
 
-        UserKeyPair userKeyPair = new UserKeyPair();
-        userKeyPair.setUserPrivateKey(userPrivateKey);
-        userKeyPair.setUserPublicKey(userPublicKey);
-
-        return userKeyPair;
+        return new UserKeyPair(userPrivateKey, userPublicKey);
     }
 
     private static String encryptPrivateKey(PrivateKey privateKey, String password)
@@ -337,11 +328,10 @@ public class Crypto {
             throw new CryptoSystemException("Could not encrypt file key. Encryption failed.", e);
         }
 
-        EncryptedFileKey encFileKey = new EncryptedFileKey();
-        encFileKey.setKey(CryptoUtils.byteArrayToString(eFileKey));
-        encFileKey.setIv(plainFileKey.getIv());
+        EncryptedFileKey encFileKey = new EncryptedFileKey(plainFileKey.getVersion(), CryptoUtils
+                .byteArrayToString(eFileKey), plainFileKey.getIv());
+
         encFileKey.setTag(plainFileKey.getTag());
-        encFileKey.setVersion(plainFileKey.getVersion());
 
         return encFileKey;
     }
@@ -391,11 +381,10 @@ public class Crypto {
             throw new InvalidFileKeyException("Could not decrypt file key. Encryption failed.", e);
         }
 
-        PlainFileKey plainFileKey = new PlainFileKey();
-        plainFileKey.setKey(CryptoUtils.byteArrayToString(dFileKey));
-        plainFileKey.setIv(encFileKey.getIv());
+        PlainFileKey plainFileKey = new PlainFileKey(encFileKey.getVersion(), CryptoUtils.
+                byteArrayToString(dFileKey), encFileKey.getIv());
+
         plainFileKey.setTag(encFileKey.getTag());
-        plainFileKey.setVersion(encFileKey.getVersion());
 
         return plainFileKey;
     }
@@ -431,13 +420,8 @@ public class Crypto {
         byte[] key = generateSecureRandomByteArray(FILE_KEY_SIZE);
         byte[] iv = generateSecureRandomByteArray(IV_SIZE);
 
-        PlainFileKey fileKey = new PlainFileKey();
-        fileKey.setKey(CryptoUtils.byteArrayToString(key));
-        fileKey.setIv(CryptoUtils.byteArrayToString(iv));
-        fileKey.setTag(null);
-        fileKey.setVersion(version);
-
-        return fileKey;
+        return new PlainFileKey(version, CryptoUtils.byteArrayToString(key), CryptoUtils
+                .byteArrayToString(iv));
     }
 
     private static byte[] generateSecureRandomByteArray(int size) {
@@ -507,12 +491,8 @@ public class Crypto {
             throw new InvalidKeyPairException("Private key container cannot be null.");
         }
         String version = privateKey.getVersion();
-        if (version == null || !version.equals(CryptoConstants.DEFAULT_KEY_PAIR_VERSION)) {
+        if (!version.equals(CryptoConstants.DEFAULT_KEY_PAIR_VERSION)) {
             throw new InvalidKeyPairException("Unknown private key version.");
-        }
-        String pk = privateKey.getPrivateKey();
-        if (pk == null || pk.isEmpty()) {
-            throw new InvalidKeyPairException("Private key cannot be null or empty.");
         }
     }
 
@@ -522,12 +502,8 @@ public class Crypto {
             throw new InvalidKeyPairException("Public key container cannot be null.");
         }
         String version = publicKey.getVersion();
-        if (version == null || !version.equals(CryptoConstants.DEFAULT_KEY_PAIR_VERSION)) {
+        if (!version.equals(CryptoConstants.DEFAULT_KEY_PAIR_VERSION)) {
             throw new InvalidKeyPairException("Unknown public key version.");
-        }
-        String pk = publicKey.getPublicKey();
-        if (pk == null || pk.isEmpty()) {
-            throw new InvalidKeyPairException("Public key cannot be null or empty.");
         }
     }
 
@@ -542,7 +518,7 @@ public class Crypto {
             throw new InvalidFileKeyException("File key cannot be null.");
         }
         String version = fileKey.getVersion();
-        if (version == null || !version.equals(CryptoConstants.DEFAULT_FILE_KEY_VERSION)) {
+        if (!version.equals(CryptoConstants.DEFAULT_FILE_KEY_VERSION)) {
             throw new InvalidFileKeyException("Unknown file key version.");
         }
     }
@@ -553,7 +529,7 @@ public class Crypto {
             throw new InvalidFileKeyException("File key cannot be null.");
         }
         String version = fileKey.getVersion();
-        if (version == null || !version.equals(CryptoConstants.DEFAULT_FILE_KEY_VERSION)) {
+        if (!version.equals(CryptoConstants.DEFAULT_FILE_KEY_VERSION)) {
             throw new InvalidFileKeyException("Unknown file key version.");
         }
     }

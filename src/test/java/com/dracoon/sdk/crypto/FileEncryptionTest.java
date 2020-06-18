@@ -9,9 +9,8 @@ import java.util.Arrays;
 
 import com.dracoon.sdk.crypto.model.EncryptedDataContainer;
 import com.dracoon.sdk.crypto.model.PlainDataContainer;
-import org.junit.Test;
-
 import com.dracoon.sdk.crypto.model.PlainFileKey;
+import org.junit.Test;
 
 public class FileEncryptionTest {
 

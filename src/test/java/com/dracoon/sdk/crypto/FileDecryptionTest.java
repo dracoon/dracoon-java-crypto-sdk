@@ -7,11 +7,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.junit.Test;
-
 import com.dracoon.sdk.crypto.model.EncryptedDataContainer;
 import com.dracoon.sdk.crypto.model.PlainDataContainer;
 import com.dracoon.sdk.crypto.model.PlainFileKey;
+import org.junit.Test;
 
 public class FileDecryptionTest {
 
