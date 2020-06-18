@@ -89,7 +89,7 @@ public class Crypto {
      */
     public static UserKeyPair generateUserKeyPair(String password) throws InvalidKeyPairException,
             InvalidPasswordException, CryptoSystemException {
-        return generateUserKeyPair(CryptoConstants.DEFAULT_VERSION, password);
+        return generateUserKeyPair(CryptoConstants.DEFAULT_KEY_PAIR_VERSION, password);
     }
 
     /**
@@ -409,7 +409,7 @@ public class Crypto {
      */
     public static PlainFileKey generateFileKey() {
         try {
-            return generateFileKey(CryptoConstants.DEFAULT_VERSION);
+            return generateFileKey(CryptoConstants.DEFAULT_FILE_KEY_VERSION);
         } catch (InvalidFileKeyException e) {
             // Nothing to do here
             return null;
@@ -496,7 +496,7 @@ public class Crypto {
 
     private static void validateUserKeyPairVersion(String version) throws InvalidKeyPairException {
         if (version == null || version.isEmpty() ||
-                !version.equals(CryptoConstants.DEFAULT_VERSION)) {
+                !version.equals(CryptoConstants.DEFAULT_KEY_PAIR_VERSION)) {
             throw new InvalidKeyPairException("Unknown user key pair version.");
         }
     }
@@ -507,7 +507,7 @@ public class Crypto {
             throw new InvalidKeyPairException("Private key container cannot be null.");
         }
         String version = privateKey.getVersion();
-        if (version == null || !version.equals(CryptoConstants.DEFAULT_VERSION)) {
+        if (version == null || !version.equals(CryptoConstants.DEFAULT_KEY_PAIR_VERSION)) {
             throw new InvalidKeyPairException("Unknown private key version.");
         }
         String pk = privateKey.getPrivateKey();
@@ -522,7 +522,7 @@ public class Crypto {
             throw new InvalidKeyPairException("Public key container cannot be null.");
         }
         String version = publicKey.getVersion();
-        if (version == null || !version.equals(CryptoConstants.DEFAULT_VERSION)) {
+        if (version == null || !version.equals(CryptoConstants.DEFAULT_KEY_PAIR_VERSION)) {
             throw new InvalidKeyPairException("Unknown public key version.");
         }
         String pk = publicKey.getPublicKey();
@@ -542,7 +542,7 @@ public class Crypto {
             throw new InvalidFileKeyException("File key cannot be null.");
         }
         String version = fileKey.getVersion();
-        if (version == null || !version.equals(CryptoConstants.DEFAULT_VERSION)) {
+        if (version == null || !version.equals(CryptoConstants.DEFAULT_FILE_KEY_VERSION)) {
             throw new InvalidFileKeyException("Unknown file key version.");
         }
     }
@@ -553,7 +553,7 @@ public class Crypto {
             throw new InvalidFileKeyException("File key cannot be null.");
         }
         String version = fileKey.getVersion();
-        if (version == null || !version.equals(CryptoConstants.DEFAULT_VERSION)) {
+        if (version == null || !version.equals(CryptoConstants.DEFAULT_FILE_KEY_VERSION)) {
             throw new InvalidFileKeyException("Unknown file key version.");
         }
     }
