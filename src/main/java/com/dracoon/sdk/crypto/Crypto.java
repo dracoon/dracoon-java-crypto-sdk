@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -112,15 +113,7 @@ public class Crypto {
         validateUserKeyPairVersion(version);
         validatePassword(password);
 
-        KeyPair keyPair;
-        try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-            keyGen.initialize(2048);
-            keyPair = keyGen.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            throw new CryptoSystemException("Could not generate RSA key pair. Algorithm is " +
-                    "missing.", e);
-        }
+        KeyPair keyPair = generateKeyPair(version);
 
         String privateKeyString = encryptPrivateKey(keyPair.getPrivate(), password);
         String publicKeyString = getStringFromPublicKey(keyPair.getPublic());
@@ -130,6 +123,30 @@ public class Crypto {
         UserPublicKey userPublicKey = new UserPublicKey(version, publicKeyString);
 
         return new UserKeyPair(userPrivateKey, userPublicKey);
+    }
+
+    private static KeyPair generateKeyPair(String version) throws InvalidKeyPairException,
+            CryptoSystemException {
+        int keySize;
+        switch (version) {
+            case CryptoConstants.KeyPairVersions.A:
+                keySize = 2048;
+                break;
+            case CryptoConstants.KeyPairVersions.RSA4096:
+                keySize = 4096;
+                break;
+            default:
+                throw new InvalidKeyPairException("Unknown user key pair version.");
+        }
+
+        try {
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+            keyGen.initialize(keySize);
+            return keyGen.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            throw new CryptoSystemException("Could not generate RSA key pair. Algorithm is " +
+                    "missing.", e);
+        }
     }
 
     private static String encryptPrivateKey(PrivateKey privateKey, String password)
@@ -308,14 +325,14 @@ public class Crypto {
         validatePlainFileKey(plainFileKey);
         validateUserPublicKey(userPublicKey);
 
+        checkFileKeyCompatibility(userPublicKey.getVersion(), plainFileKey.getVersion());
+
         PublicKey publicKey = getPublicKeyFromString(userPublicKey.getPublicKey());
 
         Cipher cipher;
         try {
-            cipher = Cipher.getInstance("RSA/ECB/OAEPWITHSHA-256ANDMGF1PADDING");
-            AlgorithmParameterSpec spec = new OAEPParameterSpec("SHA-256", "MGF1",
-                    MGF1ParameterSpec.SHA1, PSource.PSpecified.DEFAULT);
-            cipher.init(Cipher.ENCRYPT_MODE, publicKey, spec);
+            cipher = createFileKeyCipher(Cipher.ENCRYPT_MODE, userPublicKey.getVersion(),
+                    publicKey);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException |
                 InvalidAlgorithmParameterException e) {
             throw new CryptoSystemException("Could not encrypt file key. Creation of cipher " +
@@ -361,14 +378,14 @@ public class Crypto {
         validateUserPrivateKey(userPrivateKey);
         validatePassword(password);
 
+        checkFileKeyCompatibility(userPrivateKey.getVersion(), encFileKey.getVersion());
+
         PrivateKey privateKey = decryptPrivateKey(userPrivateKey.getPrivateKey(), password);
 
         Cipher cipher;
         try {
-            cipher = Cipher.getInstance("RSA/ECB/OAEPWITHSHA-256ANDMGF1PADDING");
-            AlgorithmParameterSpec spec = new OAEPParameterSpec("SHA-256", "MGF1",
-                    MGF1ParameterSpec.SHA1, PSource.PSpecified.DEFAULT);
-            cipher.init(Cipher.DECRYPT_MODE, privateKey, spec);
+            cipher = createFileKeyCipher(Cipher.DECRYPT_MODE, userPrivateKey.getVersion(),
+                    privateKey);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException |
                 InvalidAlgorithmParameterException e) {
             throw new CryptoSystemException("Could not decrypt file key. Creation of cipher " +
@@ -391,6 +408,31 @@ public class Crypto {
         plainFileKey.setTag(encFileKey.getTag());
 
         return plainFileKey;
+    }
+
+    private static Cipher createFileKeyCipher(int mode, String version, Key key)
+            throws InvalidKeyPairException, NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidAlgorithmParameterException, InvalidKeyException {
+        String transformation;
+        AlgorithmParameterSpec spec;
+        switch (version) {
+            case CryptoConstants.KeyPairVersions.A:
+                transformation = "RSA/ECB/OAEPWITHSHA-256ANDMGF1PADDING";
+                spec = new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA1,
+                        PSource.PSpecified.DEFAULT);
+                break;
+            case CryptoConstants.KeyPairVersions.RSA4096:
+                transformation = "RSA/ECB/OAEPWITHSHA-256ANDMGF1PADDING";
+                spec = new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256,
+                        PSource.PSpecified.DEFAULT);
+                break;
+            default:
+                throw new InvalidKeyPairException("Unknown user key pair version.");
+        }
+
+        Cipher cipher = Cipher.getInstance(transformation);
+        cipher.init(mode, key, spec);
+        return cipher;
     }
 
     // --- SYMMETRIC ENCRYPTION AND DECRYPTION ---
@@ -483,10 +525,10 @@ public class Crypto {
     }
 
     private static void validateUserKeyPairVersion(String version) throws InvalidKeyPairException {
-        if (version == null || version.isEmpty() ||
-                !version.equals(CryptoConstants.DEFAULT_KEY_PAIR_VERSION)) {
-            throw new InvalidKeyPairException("Unknown user key pair version.");
+        if (version == null || version.isEmpty()) {
+            throw new InvalidKeyPairException("User key pair version cannot be null or empty.");
         }
+        validateKeyPairVersion("user key pair", version);
     }
 
     private static void validateUserPrivateKey(UserPrivateKey privateKey)
@@ -494,10 +536,7 @@ public class Crypto {
         if (privateKey == null) {
             throw new InvalidKeyPairException("Private key container cannot be null.");
         }
-        String version = privateKey.getVersion();
-        if (!version.equals(CryptoConstants.DEFAULT_KEY_PAIR_VERSION)) {
-            throw new InvalidKeyPairException("Unknown private key version.");
-        }
+        validateKeyPairVersion("private key", privateKey.getVersion());
     }
 
     private static void validateUserPublicKey(UserPublicKey publicKey)
@@ -505,36 +544,67 @@ public class Crypto {
         if (publicKey == null) {
             throw new InvalidKeyPairException("Public key container cannot be null.");
         }
-        String version = publicKey.getVersion();
-        if (!version.equals(CryptoConstants.DEFAULT_KEY_PAIR_VERSION)) {
-            throw new InvalidKeyPairException("Unknown public key version.");
+        validateKeyPairVersion("public key", publicKey.getVersion());
+    }
+
+    private static void validateKeyPairVersion(String type, String version)
+            throws InvalidKeyPairException {
+        if (!equalsAny(version, CryptoConstants.KeyPairVersions.A, CryptoConstants.KeyPairVersions
+                .RSA4096)) {
+            throw new InvalidKeyPairException(String.format("Unknown %s version.", type));
         }
     }
 
     private static void validateFileKeyVersion(String version) throws InvalidFileKeyException {
-        if (version == null || version.isEmpty()) {
-            throw new InvalidFileKeyException("Unknown file key version.");
+        if (version == null) {
+            throw new InvalidFileKeyException("File key version cannot be null.");
         }
+        validateFileKeyVersion("file key", version);
     }
 
     private static void validatePlainFileKey(PlainFileKey fileKey) throws InvalidFileKeyException {
         if (fileKey == null) {
-            throw new InvalidFileKeyException("File key cannot be null.");
+            throw new InvalidFileKeyException("Plain file key cannot be null.");
         }
-        String version = fileKey.getVersion();
-        if (!version.equals(CryptoConstants.DEFAULT_FILE_KEY_VERSION)) {
-            throw new InvalidFileKeyException("Unknown file key version.");
-        }
+        validateFileKeyVersion("plain file key", fileKey.getVersion());
     }
 
     private static void validateEncryptedFileKey(EncryptedFileKey fileKey)
             throws InvalidFileKeyException {
         if (fileKey == null) {
-            throw new InvalidFileKeyException("File key cannot be null.");
+            throw new InvalidFileKeyException("Encrypted file key cannot be null.");
         }
-        String version = fileKey.getVersion();
-        if (!version.equals(CryptoConstants.DEFAULT_FILE_KEY_VERSION)) {
-            throw new InvalidFileKeyException("Unknown file key version.");
+        validateFileKeyVersion("encrypted file key", fileKey.getVersion());
+    }
+
+    private static void validateFileKeyVersion(String type, String version)
+            throws InvalidFileKeyException {
+        if (!equalsAny(version, CryptoConstants.FileKeyVersions.A, CryptoConstants.FileKeyVersions
+                .RSA4096_AES256GCM)) {
+            throw new InvalidFileKeyException(String.format("Unknown %s version.", type));
+        }
+    }
+
+    private static boolean equalsAny(String a, String... bs) {
+        for (String b : bs) {
+            if (a == null && b == null) {
+                return true;
+            }
+            if (a != null && a.equals(b)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // --- COMPATIBILITY CHECK ---
+
+    private static void checkFileKeyCompatibility(String keyPairVersion, String fileKeyVersion)
+            throws InvalidFileKeyException {
+        String[] fkvp = fileKeyVersion.split("\\/");
+        if (!keyPairVersion.equals(fkvp[0])) {
+            throw new InvalidFileKeyException(String.format("User key pair version '%s' and file "+
+                    "key verion '%s' are not compatible.", keyPairVersion, fileKeyVersion));
         }
     }
 
