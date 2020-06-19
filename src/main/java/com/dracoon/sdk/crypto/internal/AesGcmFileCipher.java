@@ -1,9 +1,10 @@
-package com.dracoon.sdk.crypto;
+package com.dracoon.sdk.crypto.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import com.dracoon.sdk.crypto.CryptoUtils;
 import com.dracoon.sdk.crypto.error.BadFileException;
 import com.dracoon.sdk.crypto.error.CryptoSystemException;
 import com.dracoon.sdk.crypto.model.PlainFileKey;
@@ -13,7 +14,7 @@ import org.bouncycastle.crypto.modes.GCMBlockCipher;
 import org.bouncycastle.crypto.params.AEADParameters;
 import org.bouncycastle.crypto.params.KeyParameter;
 
-public abstract class FileCipher {
+public abstract class AesGcmFileCipher {
 
     protected static final int BLOCK_SIZE = 16;
     protected static final int TAG_SIZE = 16;

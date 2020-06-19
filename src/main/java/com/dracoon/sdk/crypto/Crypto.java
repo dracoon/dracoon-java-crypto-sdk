@@ -28,6 +28,8 @@ import com.dracoon.sdk.crypto.error.CryptoSystemException;
 import com.dracoon.sdk.crypto.error.InvalidFileKeyException;
 import com.dracoon.sdk.crypto.error.InvalidKeyPairException;
 import com.dracoon.sdk.crypto.error.InvalidPasswordException;
+import com.dracoon.sdk.crypto.internal.AesGcmFileDecryptionCipher;
+import com.dracoon.sdk.crypto.internal.AesGcmFileEncryptionCipher;
 import com.dracoon.sdk.crypto.model.EncryptedFileKey;
 import com.dracoon.sdk.crypto.model.PlainFileKey;
 import com.dracoon.sdk.crypto.model.UserKeyPair;
@@ -490,7 +492,7 @@ public class Crypto {
     public static FileEncryptionCipher createFileEncryptionCipher(PlainFileKey fileKey)
             throws InvalidFileKeyException, CryptoSystemException {
         validatePlainFileKey(fileKey);
-        return new FileEncryptionCipher(fileKey);
+        return new AesGcmFileEncryptionCipher(fileKey);
     }
 
     /**
@@ -506,7 +508,7 @@ public class Crypto {
     public static FileDecryptionCipher createFileDecryptionCipher(PlainFileKey fileKey)
             throws InvalidFileKeyException, CryptoSystemException {
         validatePlainFileKey(fileKey);
-        return new FileDecryptionCipher(fileKey);
+        return new AesGcmFileDecryptionCipher(fileKey);
     }
 
     // --- VALIDATORS ---
