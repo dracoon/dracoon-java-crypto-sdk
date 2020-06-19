@@ -87,7 +87,9 @@ public class CryptoTest {
     @Test
     public void testCheckUserKeyPair_Success() throws InvalidKeyPairException,
             CryptoSystemException {
-        boolean testCheck = testCheckUserKeyPair("data/private_key.json", "data/public_key.json",
+        boolean testCheck = testCheckUserKeyPair(
+                "data/kp_rsa2048/private_key.json",
+                "data/kp_rsa2048/public_key.json",
                 "Pass1234!");
 
         assertTrue("User key pair check failed!", testCheck);
@@ -95,69 +97,67 @@ public class CryptoTest {
 
     // --- Tests for invalid private key ---
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testCheckUserKeyPair_PrivateKeyNull() throws InvalidFileKeyException,
-    InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testCheckUserKeyPair(null, "data/public_key.json", "Pass1234!");
-    }
-
     @Test(expected=InvalidKeyPairException.class)
-    public void testCheckUserKeyPair_PrivateKeyBadVersion() throws InvalidFileKeyException,
-    InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testCheckUserKeyPair("data/private_key_bad_version.json", "data/public_key.json",
+    public void testCheckUserKeyPair_PrivateKeyBadVersion() throws InvalidKeyPairException,
+            CryptoSystemException {
+        testCheckUserKeyPair(
+                "data/kp_general/private_key_bad_version.json",
+                "data/kp_rsa2048/public_key.json",
                 "Pass1234!");
     }
 
     @Test(expected=InvalidKeyPairException.class)
-    public void testCheckUserKeyPair_PrivateKeyBadPem() throws InvalidFileKeyException,
-    InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testCheckUserKeyPair("data/private_key_bad_pem.json", "data/public_key.json", "Pass1234!");
+    public void testCheckUserKeyPair_PrivateKeyBadPem() throws InvalidKeyPairException,
+            CryptoSystemException {
+        testCheckUserKeyPair(
+                "data/kp_general/private_key_bad_pem.json",
+                "data/kp_rsa2048/public_key.json",
+                "Pass1234!");
     }
 
     @Test
     public void testCheckUserKeyPair_PrivateKeyBadAsn1() throws InvalidKeyPairException,
             CryptoSystemException {
-        boolean testCheck = testCheckUserKeyPair("data/private_key_bad_asn1.json",
-                "data/public_key.json", "Qwer1234!");
+        boolean testCheck = testCheckUserKeyPair(
+                "data/kp_general/private_key_bad_asn1.json",
+                "data/kp_rsa2048/public_key.json",
+                "Qwer1234!");
 
         assertTrue("User key pair check failed!", testCheck);
     }
 
     @Test(expected=InvalidKeyPairException.class)
-    public void testCheckUserKeyPair_PrivateKeyBadValue() throws InvalidFileKeyException,
-    InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testCheckUserKeyPair("data/private_key_bad_value.json", "data/public_key.json", "Pass1234!");
+    public void testCheckUserKeyPair_PrivateKeyBadValue() throws InvalidKeyPairException,
+            CryptoSystemException {
+        testCheckUserKeyPair(
+                "data/kp_general/private_key_bad_value.json",
+                "data/kp_rsa2048/public_key.json",
+                "Pass1234!");
     }
 
     // --- Tests for invalid password ---
 
     @Test
-    public void testCheckUserKeyPair_PasswordNull() throws InvalidFileKeyException,
-            InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        boolean testCheck = testCheckUserKeyPair("data/private_key.json", "data/public_key.json",
+    public void testCheckUserKeyPair_PasswordNull() throws InvalidKeyPairException,
+            CryptoSystemException {
+        boolean testCheck = testCheckUserKeyPair(
+                "data/kp_rsa2048/private_key.json",
+                "data/kp_rsa2048/public_key.json",
                 null);
 
         assertFalse("User key pair check was successful!", testCheck);
     }
 
     @Test
-    public void testCheckUserKeyPair_PasswordInvalid() throws InvalidFileKeyException,
-            InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        boolean testCheck = testCheckUserKeyPair("data/private_key.json", "data/public_key.json",
+    public void testCheckUserKeyPair_PasswordInvalid() throws InvalidKeyPairException,
+            CryptoSystemException {
+        boolean testCheck = testCheckUserKeyPair(
+                "data/kp_rsa2048/private_key.json",
+                "data/kp_rsa2048/public_key.json",
                 "Invalid-Password");
 
         assertFalse("User key pair check was successful!", testCheck);
     }
-
-    // --- Tests for invalid public key ---
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testCheckUserKeyPair_PublicKeyNull() throws InvalidFileKeyException,
-            InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testCheckUserKeyPair("data/private_key.json", null, "Pass1234!");
-    }
-
-    // TODO !!!
 
     // --- Test helper method ---
 
@@ -176,9 +176,13 @@ public class CryptoTest {
     @Test
     public void testEncryptFileKey_Success() throws InvalidFileKeyException,
             InvalidKeyPairException, CryptoSystemException {
-        EncryptedFileKey efk = TestUtils.readData(EncryptedFileKey.class, "data/enc_file_key.json");
-        EncryptedFileKey testEfk = testEncryptFileKey("data/plain_file_key.json",
-                                                      "data/public_key.json");
+        EncryptedFileKey efk = TestUtils.readData(
+                EncryptedFileKey.class,
+                "data/fk_rsa2048_aes256gcm/enc_file_key.json");
+
+        EncryptedFileKey testEfk = testEncryptFileKey(
+                "data/fk_rsa2048_aes256gcm/plain_file_key.json",
+                "data/kp_rsa2048/public_key.json");
 
         assertNotNull("File key is null!", testEfk.getKey());
         assertEquals("Initialization vector is incorrect!", efk.getIv(), testEfk.getIv());
@@ -206,10 +210,14 @@ public class CryptoTest {
     @Test
     public void testDecryptFileKey_Success() throws InvalidFileKeyException, InvalidKeyPairException,
             InvalidPasswordException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, "data/plain_file_key.json");
-        PlainFileKey testPfk = testDecryptFileKey("data/enc_file_key.json",
-                                                  "data/private_key.json",
-                                                  "Pass1234!");
+        PlainFileKey pfk = TestUtils.readData(
+                PlainFileKey.class,
+                "data/fk_rsa2048_aes256gcm/plain_file_key.json");
+
+        PlainFileKey testPfk = testDecryptFileKey(
+                "data/fk_rsa2048_aes256gcm/enc_file_key.json",
+                "data/kp_rsa2048/private_key.json",
+                "Pass1234!");
 
         assertEquals("File key is incorrect!", pfk.getKey(), testPfk.getKey());
         assertEquals("Initialization vector is incorrect!", pfk.getIv(), testPfk.getIv());
@@ -222,25 +230,28 @@ public class CryptoTest {
     @Test(expected=InvalidFileKeyException.class)
     public void testDecryptFileKey_FileKeyNull() throws InvalidFileKeyException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testDecryptFileKey(null,
-                           "data/private_key.json",
-                           "Pass1234!");
+        testDecryptFileKey(
+                null,
+                "data/kp_rsa2048/private_key.json",
+                "Pass1234!");
     }
 
     @Test(expected=InvalidFileKeyException.class)
     public void testDecryptFileKey_FileKeyBadVersion() throws InvalidFileKeyException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testDecryptFileKey("data/enc_file_key_bad_version.json",
-                           "data/private_key.json",
-                           "Pass1234!");
+        testDecryptFileKey(
+                "data/fk_general/enc_file_key_bad_version.json",
+                "data/kp_rsa2048/private_key.json",
+                "Pass1234!");
     }
 
     @Test(expected=InvalidFileKeyException.class)
     public void testDecryptFileKey_FileKeyBadKey() throws InvalidFileKeyException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testDecryptFileKey("data/enc_file_key_bad_key.json",
-                           "data/private_key.json",
-                           "Pass1234!");
+        testDecryptFileKey(
+                "data/fk_general/enc_file_key_bad_key.json",
+                "data/kp_rsa2048/private_key.json",
+                "Pass1234!");
     }
 
     // --- Tests for invalid private key ---
@@ -248,33 +259,37 @@ public class CryptoTest {
     @Test(expected=InvalidKeyPairException.class)
     public void testDecryptFileKey_PrivateKeyNull() throws InvalidFileKeyException,
     InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testDecryptFileKey("data/enc_file_key.json",
-                           null,
-                           "Pass1234!");
+        testDecryptFileKey(
+                "data/fk_rsa2048_aes256gcm/enc_file_key.json",
+                null,
+                "Pass1234!");
     }
 
     @Test(expected=InvalidKeyPairException.class)
     public void testDecryptFileKey_PrivateKeyBadVersion() throws InvalidFileKeyException,
     InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testDecryptFileKey("data/enc_file_key.json",
-                           "data/private_key_bad_version.json",
-                           "Pass1234!");
+        testDecryptFileKey(
+                "data/fk_rsa2048_aes256gcm/enc_file_key.json",
+                "data/kp_general/private_key_bad_version.json",
+                "Pass1234!");
     }
 
     @Test(expected=InvalidKeyPairException.class)
     public void testDecryptFileKey_PrivateKeyBadPem() throws InvalidFileKeyException,
     InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testDecryptFileKey("data/enc_file_key.json",
-                           "data/private_key_bad_pem.json",
-                           "Pass1234!");
+        testDecryptFileKey(
+                "data/fk_rsa2048_aes256gcm/enc_file_key.json",
+                "data/kp_general/private_key_bad_pem.json",
+                "Pass1234!");
     }
 
     @Test(expected=InvalidKeyPairException.class)
     public void testDecryptFileKey_PrivateKeyBadValue() throws InvalidFileKeyException,
     InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testDecryptFileKey("data/enc_file_key.json",
-                           "data/private_key_bad_value.json",
-                           "Pass1234!");
+        testDecryptFileKey(
+                "data/fk_rsa2048_aes256gcm/enc_file_key.json",
+                "data/kp_general/private_key_bad_value.json",
+                "Pass1234!");
     }
 
     // --- Tests for invalid password ---
@@ -282,17 +297,19 @@ public class CryptoTest {
     @Test(expected=InvalidPasswordException.class)
     public void testDecryptFileKey_PasswordNull() throws InvalidFileKeyException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testDecryptFileKey("data/enc_file_key.json",
-                           "data/private_key.json",
-                           null);
+        testDecryptFileKey(
+                "data/fk_rsa2048_aes256gcm/enc_file_key.json",
+                "data/kp_rsa2048/private_key.json",
+                null);
     }
 
     @Test(expected=InvalidPasswordException.class)
     public void testDecryptFileKey_PasswordInvalid() throws InvalidFileKeyException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        testDecryptFileKey("data/enc_file_key.json",
-                           "data/private_key.json",
-                           "Invalid-Password");
+        testDecryptFileKey(
+                "data/fk_rsa2048_aes256gcm/enc_file_key.json",
+                "data/kp_rsa2048/private_key.json",
+                "Invalid-Password");
     }
 
     // --- Test helper method ---
