@@ -1,4 +1,4 @@
-package com.dracoon.sdk.crypto;
+package com.dracoon.sdk.crypto.error;
 
 /**
  * Signals a crypto problem.

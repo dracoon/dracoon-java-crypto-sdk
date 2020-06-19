@@ -1,5 +1,7 @@
 package com.dracoon.sdk.crypto;
 
+import com.dracoon.sdk.crypto.error.BadFileException;
+import com.dracoon.sdk.crypto.error.CryptoSystemException;
 import com.dracoon.sdk.crypto.model.EncryptedDataContainer;
 import com.dracoon.sdk.crypto.model.PlainDataContainer;
 import com.dracoon.sdk.crypto.model.PlainFileKey;
