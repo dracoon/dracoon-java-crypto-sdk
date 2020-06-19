@@ -29,8 +29,8 @@ public class CryptoTest {
         UserPrivateKey testPrik = testUkp.getUserPrivateKey();
         assertNotNull("Private key container is null!", testPrik);
         assertNotNull("Private key version is null!", testPrik.getVersion());
-        assertTrue("Private key version is empty!", !testPrik.getVersion().isEmpty());
-        assertTrue("Private key version is invalid!", testPrik.getVersion().equals("A"));
+        assertFalse("Private key version is empty!", testPrik.getVersion().isEmpty());
+        assertEquals("Private key version is invalid!", "A", testPrik.getVersion());
         assertNotNull("Private key is null!", testPrik.getPrivateKey());
         assertTrue("Private key is invalid!", testPrik.getPrivateKey().startsWith(
                 "-----BEGIN ENCRYPTED PRIVATE KEY-----"));
@@ -38,8 +38,8 @@ public class CryptoTest {
         UserPublicKey testPubk = testUkp.getUserPublicKey();
         assertNotNull("Public key container is null!", testPubk);
         assertNotNull("Public key version is null!", testPubk.getVersion());
-        assertTrue("Public key version is empty!", !testPubk.getVersion().isEmpty());
-        assertTrue("Public key version is invalid!", testPubk.getVersion().equals("A"));
+        assertFalse("Public key version is empty!", testPubk.getVersion().isEmpty());
+        assertEquals("Public key version is invalid!", "A", testPubk.getVersion());
         assertNotNull("Public key is null!", testPubk.getPublicKey());
         assertTrue("Public key is invalid!", testPubk.getPublicKey().startsWith(
                 "-----BEGIN PUBLIC KEY-----"));
@@ -93,6 +93,14 @@ public class CryptoTest {
                 "Pass1234!");
 
         assertTrue("User key pair check failed!", testCheck);
+    }
+
+    // --- Tests for invalid key pair ---
+
+    @Test(expected=InvalidKeyPairException.class)
+    public void testCheckUserKeyPair_KeyPairNull() throws InvalidKeyPairException,
+            CryptoSystemException {
+        Crypto.checkUserKeyPair(null, null);
     }
 
     // --- Tests for invalid private key ---
@@ -192,7 +200,57 @@ public class CryptoTest {
 
     // --- Tests for invalid file key ---
 
-    // TODO !!!
+    @Test(expected=InvalidFileKeyException.class)
+    public void testEncryptFileKey_FileKeyNull() throws InvalidFileKeyException,
+            InvalidKeyPairException, CryptoSystemException {
+        testEncryptFileKey(
+                null,
+                "data/kp_rsa2048/public_key.json");
+    }
+
+    @Test(expected=InvalidFileKeyException.class)
+    public void testEncryptFileKey_FileKeyBadVersion() throws InvalidFileKeyException,
+            InvalidKeyPairException, CryptoSystemException {
+        testEncryptFileKey(
+                "data/fk_general/plain_file_key_bad_version.json",
+                "data/kp_rsa2048/public_key.json");
+    }
+
+    // --- Tests for invalid public key ---
+
+    @Test(expected=InvalidKeyPairException.class)
+    public void testEncryptFileKey_PublicKeyNull() throws InvalidFileKeyException,
+            InvalidKeyPairException, CryptoSystemException {
+        testEncryptFileKey(
+                "data/fk_rsa2048_aes256gcm/plain_file_key.json",
+                null);
+    }
+
+    @Test(expected=InvalidKeyPairException.class)
+    public void testEncryptFileKey_PublicKeyBadVersion() throws InvalidFileKeyException,
+            InvalidKeyPairException, CryptoSystemException {
+        testEncryptFileKey(
+                "data/fk_rsa2048_aes256gcm/plain_file_key.json",
+                "data/kp_general/public_key_bad_version.json");
+    }
+
+    @Test(expected=InvalidKeyPairException.class)
+    public void testEncryptFileKey_PublicKeyBadPem() throws InvalidFileKeyException,
+            InvalidKeyPairException, CryptoSystemException {
+        testEncryptFileKey(
+                "data/fk_rsa2048_aes256gcm/plain_file_key.json",
+                "data/kp_general/public_key_bad_pem.json");
+    }
+
+    // TODO: Add test for bad ASN.1 encoding.
+
+    @Test(expected=InvalidKeyPairException.class)
+    public void testEncryptFileKey_PublicKeyBadValue() throws InvalidFileKeyException,
+            InvalidKeyPairException, CryptoSystemException {
+        testEncryptFileKey(
+                "data/fk_rsa2048_aes256gcm/plain_file_key.json",
+                "data/kp_general/public_key_bad_value.json");
+    }
 
     // --- Test helper method ---
 
@@ -322,12 +380,97 @@ public class CryptoTest {
         return Crypto.decryptFileKey(efk, upk, pw);
     }
 
+    // ### FILE KEY CREATION TESTS ###
+
+    // --- Test for success ---
+
+    @Test
+    public void testGenerateFileKey_Success() {
+        PlainFileKey testPfk = Crypto.generateFileKey();
+        assertNotNull("File key is null!", testPfk);
+        assertEquals("File key version is invalid!", "A", testPfk.getVersion());
+    }
+
+    // --- Tests for invalid version ---
+
+    @Test(expected=InvalidFileKeyException.class)
+    public void testGenerateFileKey_VersionNull() throws InvalidFileKeyException {
+        Crypto.generateFileKey(null);
+    }
+
+    @Test(expected=InvalidFileKeyException.class)
+    public void testGenerateFileKey_VersionInvalid() throws InvalidFileKeyException {
+        Crypto.generateFileKey("Z");
+    }
+
     // ### FILE ENCRYPTION CIPHER TESTS ###
 
-    // TODO !!!
+    // --- Test for success ---
+
+    @Test
+    public void testCreateFileEncryptionCipher_Success() throws InvalidFileKeyException,
+            CryptoSystemException {
+        FileEncryptionCipher cipher = testCreateFileEncryptionCipher(
+                "data/fk_rsa2048_aes256gcm/plain_file_key.json");
+
+        assertNotNull("Cipher is null!", cipher);
+    }
+
+    // --- Tests for invalid file key ---
+
+    @Test(expected=InvalidFileKeyException.class)
+    public void testCreateFileEncryptionCipher_FileKeyNull() throws InvalidFileKeyException,
+            CryptoSystemException {
+        testCreateFileEncryptionCipher(null);
+    }
+
+    @Test(expected=InvalidFileKeyException.class)
+    public void testCreateFileEncryptionCipher_FileKeyBadVersion() throws InvalidFileKeyException,
+            CryptoSystemException {
+        testCreateFileEncryptionCipher("data/fk_general/plain_file_key_bad_version.json");
+    }
+
+    // --- Test helper method ---
+
+    private FileEncryptionCipher testCreateFileEncryptionCipher(String pfkFileName)
+            throws InvalidFileKeyException, CryptoSystemException {
+        PlainFileKey efk = TestUtils.readData(PlainFileKey.class, pfkFileName);
+        return Crypto.createFileEncryptionCipher(efk);
+    }
 
     // ### FILE DECRYPTION CIPHER TESTS ###
 
-    // TODO !!!
+    // --- Test for success ---
+
+    @Test
+    public void testCreateFileDecryptionCipher_Success() throws InvalidFileKeyException,
+            CryptoSystemException {
+        FileDecryptionCipher cipher = testCreateFileDecryptionCipher(
+                "data/fk_rsa2048_aes256gcm/plain_file_key.json");
+
+        assertNotNull("Cipher is null!", cipher);
+    }
+
+    // --- Tests for invalid file key ---
+
+    @Test(expected=InvalidFileKeyException.class)
+    public void testCreateFileDecryptionCipher_FileKeyNull() throws InvalidFileKeyException,
+            CryptoSystemException {
+        testCreateFileDecryptionCipher(null);
+    }
+
+    @Test(expected=InvalidFileKeyException.class)
+    public void testCreateFileDecryptionCipher_FileKeyBadVersion() throws InvalidFileKeyException,
+            CryptoSystemException {
+        testCreateFileDecryptionCipher("data/fk_general/plain_file_key_bad_version.json");
+    }
+
+    // --- Test helper method ---
+
+    private FileDecryptionCipher testCreateFileDecryptionCipher(String pfkFileName)
+            throws InvalidFileKeyException, CryptoSystemException {
+        PlainFileKey efk = TestUtils.readData(PlainFileKey.class, pfkFileName);
+        return Crypto.createFileDecryptionCipher(efk);
+    }
 
 }
