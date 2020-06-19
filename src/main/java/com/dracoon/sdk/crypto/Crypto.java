@@ -194,7 +194,7 @@ public class Crypto {
             obj = pemReader.readObject();
             pemReader.close();
             in.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new InvalidKeyPairException("Could not decrypt private key. PEM decoding failed.",
                     e);
         }
@@ -224,7 +224,7 @@ public class Crypto {
             JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
             return converter.getPrivateKey(pkInfo);
         } catch (PEMException e) {
-            throw new CryptoSystemException("Could not decrypted private key. PEM decoding failed.",
+            throw new InvalidKeyPairException("Could not decrypted private key. PEM decoding failed.",
                     e);
         } finally {
             org.bouncycastle.util.Properties.removeThreadOverride(PROP_ALLOW_UNSAFE_INT);
@@ -244,8 +244,7 @@ public class Crypto {
         }
     }
 
-    private static PublicKey getPublicKeyFromString(String pubKey) throws InvalidKeyPairException,
-            CryptoSystemException {
+    private static PublicKey getPublicKeyFromString(String pubKey) throws InvalidKeyPairException {
         Object obj;
         try {
             ByteArrayInputStream in = new ByteArrayInputStream(pubKey.getBytes());
@@ -253,7 +252,7 @@ public class Crypto {
             obj = pemReader.readObject();
             pemReader.close();
             in.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new InvalidKeyPairException("Could not decode public key. PEM decoding failed.",
                     e);
         }
@@ -271,7 +270,7 @@ public class Crypto {
             JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
             return converter.getPublicKey(pkInfo);
         } catch (PEMException e) {
-            throw new CryptoSystemException("Could not decode public key. PEM decoding failed.", e);
+            throw new InvalidKeyPairException("Could not decode public key. PEM decoding failed.", e);
         } finally {
             org.bouncycastle.util.Properties.removeThreadOverride(PROP_ALLOW_UNSAFE_INT);
         }
