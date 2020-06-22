@@ -19,6 +19,8 @@ public class UserKeyPair {
     public UserKeyPair(UserPrivateKey userPrivateKey, UserPublicKey userPublicKey) {
         Validator.validateNotNull("userPrivateKey", userPrivateKey);
         Validator.validateNotNull("userPublicKey", userPublicKey);
+        Validator.validateEqual("userPublicKey.version", userPublicKey,
+                "userPublicKey.version", userPublicKey);
         this.userPrivateKey = userPrivateKey;
         this.userPublicKey = userPublicKey;
     }
