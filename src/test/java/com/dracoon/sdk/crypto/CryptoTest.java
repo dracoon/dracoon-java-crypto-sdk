@@ -22,15 +22,32 @@ public class CryptoTest {
     @Test
     public void testGenerateUserKeyPair_Success() throws InvalidKeyPairException,
             InvalidPasswordException, CryptoSystemException {
-        UserKeyPair testUkp = testGenerateUserKeyPair("A", "Qwer1234!");
+        UserKeyPair testUkp = Crypto.generateUserKeyPair("Qwer1234!");
+        validateKeyPair(testUkp, "A");
+    }
 
+    @Test
+    public void testGenerateUserKeyPair_Rsa2048_Success() throws InvalidKeyPairException,
+            InvalidPasswordException, CryptoSystemException {
+        UserKeyPair testUkp = Crypto.generateUserKeyPair("A", "Qwer1234!");
+        validateKeyPair(testUkp, "A");
+    }
+
+    @Test
+    public void testGenerateUserKeyPair_Rsa4096_Success() throws InvalidKeyPairException,
+            InvalidPasswordException, CryptoSystemException {
+        UserKeyPair testUkp = Crypto.generateUserKeyPair("RSA-4096", "Qwer1234!");
+        validateKeyPair(testUkp, "RSA-4096");
+    }
+
+    private void validateKeyPair(UserKeyPair testUkp, String version) {
         assertNotNull("Key pair is null!", testUkp);
 
         UserPrivateKey testPrik = testUkp.getUserPrivateKey();
         assertNotNull("Private key container is null!", testPrik);
         assertNotNull("Private key version is null!", testPrik.getVersion());
         assertFalse("Private key version is empty!", testPrik.getVersion().isEmpty());
-        assertEquals("Private key version is invalid!", "A", testPrik.getVersion());
+        assertEquals("Private key version is invalid!", version, testPrik.getVersion());
         assertNotNull("Private key is null!", testPrik.getPrivateKey());
         assertTrue("Private key is invalid!", testPrik.getPrivateKey().startsWith(
                 "-----BEGIN ENCRYPTED PRIVATE KEY-----"));
@@ -39,7 +56,7 @@ public class CryptoTest {
         assertNotNull("Public key container is null!", testPubk);
         assertNotNull("Public key version is null!", testPubk.getVersion());
         assertFalse("Public key version is empty!", testPubk.getVersion().isEmpty());
-        assertEquals("Public key version is invalid!", "A", testPubk.getVersion());
+        assertEquals("Public key version is invalid!", version, testPubk.getVersion());
         assertNotNull("Public key is null!", testPubk.getPublicKey());
         assertTrue("Public key is invalid!", testPubk.getPublicKey().startsWith(
                 "-----BEGIN PUBLIC KEY-----"));
@@ -50,13 +67,13 @@ public class CryptoTest {
     @Test(expected=InvalidKeyPairException.class)
     public void testGenerateUserKeyPair_VersionNull() throws InvalidKeyPairException,
             InvalidPasswordException, CryptoSystemException {
-        testGenerateUserKeyPair(null, "Qwer1234!");
+        Crypto.generateUserKeyPair(null, "Qwer1234!");
     }
 
     @Test(expected=InvalidKeyPairException.class)
     public void testGenerateUserKeyPair_VersionInvalid() throws InvalidKeyPairException,
             InvalidPasswordException, CryptoSystemException {
-        testGenerateUserKeyPair("Z", "Qwer1234!");
+        Crypto.generateUserKeyPair("Z", "Qwer1234!");
     }
 
     // --- Tests for invalid password ---
@@ -64,20 +81,13 @@ public class CryptoTest {
     @Test(expected=InvalidPasswordException.class)
     public void testGenerateUserKeyPair_PasswordNull() throws InvalidKeyPairException,
             InvalidPasswordException, CryptoSystemException {
-        testGenerateUserKeyPair("A", null);
+        Crypto.generateUserKeyPair("A", null);
     }
 
     @Test(expected=InvalidPasswordException.class)
     public void testGenerateUserKeyPair_PasswordEmpty() throws InvalidKeyPairException,
             InvalidPasswordException, CryptoSystemException {
-        testGenerateUserKeyPair("A", "");
-    }
-
-    // --- Test helper method ---
-
-    private UserKeyPair testGenerateUserKeyPair(String version, String password)
-            throws InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        return Crypto.generateUserKeyPair(version, password);
+        Crypto.generateUserKeyPair("A", "");
     }
 
     // ### KEY PAIR CHECK TESTS ###
@@ -85,11 +95,22 @@ public class CryptoTest {
     // --- Test for success ---
 
     @Test
-    public void testCheckUserKeyPair_Success() throws InvalidKeyPairException,
+    public void testCheckUserKeyPair_Rsa2048_Success() throws InvalidKeyPairException,
             CryptoSystemException {
         boolean testCheck = testCheckUserKeyPair(
                 "data/kp_rsa2048/private_key.json",
                 "data/kp_rsa2048/public_key.json",
+                "Qwer1234!");
+
+        assertTrue("User key pair check failed!", testCheck);
+    }
+
+    @Test
+    public void testCheckUserKeyPair_Rsa4096_Success() throws InvalidKeyPairException,
+            CryptoSystemException {
+        boolean testCheck = testCheckUserKeyPair(
+                "data/kp_rsa4096/private_key.json",
+                "data/kp_rsa4096/public_key.json",
                 "Qwer1234!");
 
         assertTrue("User key pair check failed!", testCheck);
@@ -182,7 +203,7 @@ public class CryptoTest {
     // --- Test for success ---
 
     @Test
-    public void testEncryptFileKey_Success() throws InvalidFileKeyException,
+    public void testEncryptFileKey_Rsa2048_Success() throws InvalidFileKeyException,
             InvalidKeyPairException, CryptoSystemException {
         EncryptedFileKey efk = TestUtils.readData(
                 EncryptedFileKey.class,
@@ -192,10 +213,38 @@ public class CryptoTest {
                 "data/fk_rsa2048_aes256gcm/plain_file_key.json",
                 "data/kp_rsa2048/public_key.json");
 
+        validateEncryptedFileKey(efk, testEfk);
+    }
+
+    @Test
+    public void testEncryptFileKey_Rsa4096_Success() throws InvalidFileKeyException,
+            InvalidKeyPairException, CryptoSystemException {
+        EncryptedFileKey efk = TestUtils.readData(
+                EncryptedFileKey.class,
+                "data/fk_rsa4096_aes256gcm/enc_file_key.json");
+
+        EncryptedFileKey testEfk = testEncryptFileKey(
+                "data/fk_rsa4096_aes256gcm/plain_file_key.json",
+                "data/kp_rsa4096/public_key.json");
+
+        validateEncryptedFileKey(efk, testEfk);
+    }
+
+    private void validateEncryptedFileKey(EncryptedFileKey efk, EncryptedFileKey testEfk) {
         assertNotNull("File key is null!", testEfk.getKey());
         assertEquals("Initialization vector is incorrect!", efk.getIv(), testEfk.getIv());
         assertEquals("Tag is incorrect!", efk.getTag(), testEfk.getTag());
         assertEquals("Version is incorrect!", efk.getVersion(), testEfk.getVersion());
+    }
+
+    // --- Tests for version mismatch ---
+
+    @Test(expected=InvalidFileKeyException.class)
+    public void testEncryptFileKey_VersionMismatch() throws InvalidFileKeyException,
+            InvalidKeyPairException, CryptoSystemException {
+        testEncryptFileKey(
+                "data/fk_rsa2048_aes256gcm/plain_file_key.json",
+                "data/kp_rsa4096/public_key.json");
     }
 
     // --- Tests for invalid file key ---
@@ -266,8 +315,8 @@ public class CryptoTest {
     // --- Test for success ---
 
     @Test
-    public void testDecryptFileKey_Success() throws InvalidFileKeyException, InvalidKeyPairException,
-            InvalidPasswordException, CryptoSystemException {
+    public void testDecryptFileKey_Rsa2048_Success() throws InvalidFileKeyException,
+            InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
         PlainFileKey pfk = TestUtils.readData(
                 PlainFileKey.class,
                 "data/fk_rsa2048_aes256gcm/plain_file_key.json");
@@ -277,10 +326,40 @@ public class CryptoTest {
                 "data/kp_rsa2048/private_key.json",
                 "Qwer1234!");
 
+        validatePlainFileKey(pfk, testPfk);
+    }
+
+    @Test
+    public void testDecryptFileKey_Rsa4096_Success() throws InvalidFileKeyException,
+            InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
+        PlainFileKey pfk = TestUtils.readData(
+                PlainFileKey.class,
+                "data/fk_rsa4096_aes256gcm/plain_file_key.json");
+
+        PlainFileKey testPfk = testDecryptFileKey(
+                "data/fk_rsa4096_aes256gcm/enc_file_key.json",
+                "data/kp_rsa4096/private_key.json",
+                "Qwer1234!");
+
+        validatePlainFileKey(pfk, testPfk);
+    }
+
+    private void validatePlainFileKey(PlainFileKey pfk, PlainFileKey testPfk) {
         assertEquals("File key is incorrect!", pfk.getKey(), testPfk.getKey());
         assertEquals("Initialization vector is incorrect!", pfk.getIv(), testPfk.getIv());
         assertEquals("Tag is incorrect!", pfk.getTag(), testPfk.getTag());
         assertEquals("Version is incorrect!", pfk.getVersion(), testPfk.getVersion());
+    }
+
+    // --- Tests for version mismatch ---
+
+    @Test(expected=InvalidFileKeyException.class)
+    public void testDecryptFileKey_VersionMismatch() throws InvalidFileKeyException,
+            InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
+        testDecryptFileKey(
+                "data/fk_rsa2048_aes256gcm/enc_file_key.json",
+                "data/kp_rsa4096/private_key.json",
+                "Qwer1234!");
     }
 
     // --- Tests for invalid file key ---
@@ -387,8 +466,24 @@ public class CryptoTest {
     @Test
     public void testGenerateFileKey_Success() {
         PlainFileKey testPfk = Crypto.generateFileKey();
+        validateFileKey(testPfk, "A");
+    }
+
+    @Test
+    public void testGenerateFileKey_Rsa2048_Success() throws InvalidFileKeyException {
+        PlainFileKey testPfk = Crypto.generateFileKey("A");
+        validateFileKey(testPfk, "A");
+    }
+
+    @Test
+    public void testGenerateFileKey_Rsa4096_Success() throws InvalidFileKeyException {
+        PlainFileKey testPfk = Crypto.generateFileKey("RSA-4096/AES-256-GCM");
+        validateFileKey(testPfk, "RSA-4096/AES-256-GCM");
+    }
+
+    private void validateFileKey(PlainFileKey testPfk, String version) {
         assertNotNull("File key is null!", testPfk);
-        assertEquals("File key version is invalid!", "A", testPfk.getVersion());
+        assertEquals("File key version is invalid!", version, testPfk.getVersion());
     }
 
     // --- Tests for invalid version ---
@@ -408,10 +503,19 @@ public class CryptoTest {
     // --- Test for success ---
 
     @Test
-    public void testCreateFileEncryptionCipher_Success() throws InvalidFileKeyException,
+    public void testCreateFileEncryptionCipher_Rsa2048_Success() throws InvalidFileKeyException,
             CryptoSystemException {
         FileEncryptionCipher cipher = testCreateFileEncryptionCipher(
                 "data/fk_rsa2048_aes256gcm/plain_file_key.json");
+
+        assertNotNull("Cipher is null!", cipher);
+    }
+
+    @Test
+    public void testCreateFileEncryptionCipher_Rsa4096_Success() throws InvalidFileKeyException,
+            CryptoSystemException {
+        FileEncryptionCipher cipher = testCreateFileEncryptionCipher(
+                "data/fk_rsa4096_aes256gcm/plain_file_key.json");
 
         assertNotNull("Cipher is null!", cipher);
     }
@@ -443,10 +547,19 @@ public class CryptoTest {
     // --- Test for success ---
 
     @Test
-    public void testCreateFileDecryptionCipher_Success() throws InvalidFileKeyException,
+    public void testCreateFileDecryptionCipher_Rsa2048_Success() throws InvalidFileKeyException,
             CryptoSystemException {
         FileDecryptionCipher cipher = testCreateFileDecryptionCipher(
                 "data/fk_rsa2048_aes256gcm/plain_file_key.json");
+
+        assertNotNull("Cipher is null!", cipher);
+    }
+
+    @Test
+    public void testCreateFileDecryptionCipher_Rsa4096_Success() throws InvalidFileKeyException,
+            CryptoSystemException {
+        FileDecryptionCipher cipher = testCreateFileDecryptionCipher(
+                "data/fk_rsa4096_aes256gcm/plain_file_key.json");
 
         assertNotNull("Cipher is null!", cipher);
     }
