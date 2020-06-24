@@ -20,13 +20,6 @@ public class CryptoTest {
     // --- Test for success ---
 
     @Test
-    public void testGenerateUserKeyPair_Success() throws InvalidKeyPairException,
-            InvalidPasswordException, CryptoSystemException {
-        UserKeyPair testUkp = Crypto.generateUserKeyPair("Qwer1234!");
-        validateKeyPair(testUkp, "A");
-    }
-
-    @Test
     public void testGenerateUserKeyPair_Rsa2048_Success() throws InvalidKeyPairException,
             InvalidPasswordException, CryptoSystemException {
         UserKeyPair testUkp = Crypto.generateUserKeyPair("A", "Qwer1234!");
@@ -462,12 +455,6 @@ public class CryptoTest {
     // ### FILE KEY CREATION TESTS ###
 
     // --- Test for success ---
-
-    @Test
-    public void testGenerateFileKey_Success() {
-        PlainFileKey testPfk = Crypto.generateFileKey();
-        validateFileKey(testPfk, "A");
-    }
 
     @Test
     public void testGenerateFileKey_Rsa2048_Success() throws InvalidFileKeyException {

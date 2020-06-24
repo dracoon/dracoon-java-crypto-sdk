@@ -92,7 +92,8 @@ keypair, generate file key, encrypt file key, and finally encrypt and decrypt a 
 public static void main(String[] args) throws Exception {
     // --- INITIALIZATION ---
     // Generate key pair
-    UserKeyPair userKeyPair = Crypto.generateUserKeyPair(USER_PASSWORD);
+    UserKeyPair userKeyPair = Crypto.generateUserKeyPair(CryptoConstants.KeyPairVersions.A,
+            USER_PASSWORD);
     // Check key pair
     if (!Crypto.checkUserKeyPair(userKeyPair, USER_PASSWORD)) {
         ...
@@ -104,7 +105,7 @@ public static void main(String[] args) throws Exception {
 
     // --- ENCRYPTION ---
     // Generate plain file key
-    PlainFileKey fileKey = Crypto.generateFileKey();
+    PlainFileKey fileKey = Crypto.generateFileKey(CryptoConstants.FileKeyVersions.A);
     // Encrypt blocks
     byte[] encData = encryptData(fileKey, plainData);
     // Encrypt file key

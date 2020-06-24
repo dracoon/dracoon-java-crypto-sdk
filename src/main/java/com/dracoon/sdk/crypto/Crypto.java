@@ -56,9 +56,9 @@ import org.bouncycastle.util.io.pem.PemGenerationException;
  * This class is the main class of the Dracoon Crypto Library.<br>
  * <br>
  * The class provides methods for:<br>
- * - User key pair generation: {@link #generateUserKeyPair(String) generateUserKeyPair}<br>
+ * - User key pair generation: {@link #generateUserKeyPair(String, String) generateUserKeyPair}<br>
  * - User key pair check: {@link #checkUserKeyPair(UserKeyPair, String) checkUserKeyPair}<br>
- * - File key generation: {@link #generateFileKey() generateFileKey}<br>
+ * - File key generation: {@link #generateFileKey(String) generateFileKey}<br>
  * - File key encryption: {@link #encryptFileKey(PlainFileKey, UserPublicKey) encryptFileKey}<br>
  * - File key decryption: {@link #decryptFileKey(EncryptedFileKey, UserPrivateKey, String) decryptFileKey}<br>
  * - Cipher creation for file encryption: {@link #createFileEncryptionCipher(PlainFileKey) createFileEncryptionCipher}<br>
@@ -81,22 +81,6 @@ public class Crypto {
     }
 
     // --- KEY MANAGEMENT ---
-
-    /**
-     * Generates a random user key pair. (The default encryption version "A" is used.)
-     *
-     * @param password The password which should be used to secure the private key.
-     *
-     * @return The generated user key pair.
-     *
-     * @throws InvalidKeyPairException  If the version for the user key pair is not supported.
-     * @throws InvalidPasswordException If the password to secure the private key is invalid.
-     * @throws CryptoSystemException    If a unknown error occurred.
-     */
-    public static UserKeyPair generateUserKeyPair(String password) throws InvalidKeyPairException,
-            InvalidPasswordException, CryptoSystemException {
-        return generateUserKeyPair(CryptoConstants.DEFAULT_KEY_PAIR_VERSION, password);
-    }
 
     /**
      * Generates a random user key pair.
@@ -437,20 +421,6 @@ public class Crypto {
     }
 
     // --- SYMMETRIC ENCRYPTION AND DECRYPTION ---
-
-    /**
-     * Generates a random file key. (The default encryption version "A" is used.)
-     *
-     * @return The generated file key.
-     */
-    public static PlainFileKey generateFileKey() {
-        try {
-            return generateFileKey(CryptoConstants.DEFAULT_FILE_KEY_VERSION);
-        } catch (InvalidFileKeyException e) {
-            // Nothing to do here
-            return null;
-        }
-    }
 
     /**
      * Generates a random file key.
