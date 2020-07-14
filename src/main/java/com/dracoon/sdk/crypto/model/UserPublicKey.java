@@ -1,5 +1,7 @@
 package com.dracoon.sdk.crypto.model;
 
+import com.dracoon.sdk.crypto.internal.Validator;
+
 /**
  * User public key model.<br>
  * <br>
@@ -7,7 +9,7 @@ package com.dracoon.sdk.crypto.model;
  */
 public class UserPublicKey {
 
-    private final String version;
+    private final UserKeyPair.Version version;
     private final String publicKey;
 
     /**
@@ -15,9 +17,12 @@ public class UserPublicKey {
      *
      * @param version   The public key version.
      * @param publicKey The PEM encoded public key string.
+     *
+     * @throws IllegalArgumentException If a parameter is invalid (e.g. null or empty).
      */
-    public UserPublicKey(String version, String publicKey) {
-        Validator.validateString("version", version);
+    public UserPublicKey(UserKeyPair.Version version, String publicKey)
+            throws IllegalArgumentException {
+        Validator.validateNotNull("version", version);
         Validator.validateString("publicKey", publicKey);
         this.version = version;
         this.publicKey = publicKey;
@@ -28,7 +33,7 @@ public class UserPublicKey {
      *
      * @return the version
      */
-    public String getVersion() {
+    public UserKeyPair.Version getVersion() {
         return version;
     }
 

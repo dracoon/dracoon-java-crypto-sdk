@@ -1,5 +1,5 @@
 {
-  "version": "A",
+  "version": "AES-256-GCM",
   "key": "RZIcE5VWziSw4EPsfa40xKGM95LAdC/WMMY84g4aOHo=",
   "iv": "8O+rDR/+InRDmWxB",
   "tag": "SsQh5Pws/rmrVC2b+25v9A=="
