@@ -1,5 +1,7 @@
-package com.dracoon.sdk.crypto;
+package com.dracoon.sdk.crypto.unit;
 
+import com.dracoon.sdk.crypto.Crypto;
+import com.dracoon.sdk.crypto.CryptoBaseTest;
 import com.dracoon.sdk.crypto.error.CryptoSystemException;
 import com.dracoon.sdk.crypto.error.InvalidFileKeyException;
 import com.dracoon.sdk.crypto.error.InvalidKeyPairException;
@@ -10,7 +12,7 @@ import com.dracoon.sdk.crypto.model.PlainFileKey;
 import com.dracoon.sdk.crypto.model.UserKeyPair;
 import org.junit.Test;
 
-import static com.dracoon.sdk.crypto.TestHelper.*;
+import static com.dracoon.sdk.crypto.unit.TestHelper.*;
 
 public class CryptoTest extends CryptoBaseTest {
 

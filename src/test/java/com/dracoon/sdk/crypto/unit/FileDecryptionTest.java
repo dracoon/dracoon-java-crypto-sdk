@@ -1,13 +1,14 @@
-package com.dracoon.sdk.crypto;
+package com.dracoon.sdk.crypto.unit;
 
 import java.io.IOException;
 
+import com.dracoon.sdk.crypto.FileDecryptionBaseTest;
 import com.dracoon.sdk.crypto.error.BadFileException;
 import com.dracoon.sdk.crypto.error.CryptoSystemException;
 import com.dracoon.sdk.crypto.model.EncryptedDataContainer;
 import org.junit.Test;
 
-import static com.dracoon.sdk.crypto.TestHelper.*;
+import static com.dracoon.sdk.crypto.unit.TestHelper.*;
 
 public class FileDecryptionTest extends FileDecryptionBaseTest {
 
@@ -18,8 +19,8 @@ public class FileDecryptionTest extends FileDecryptionBaseTest {
             IllegalStateException, IOException, CryptoSystemException {
         testDecryptSingleBlock(
                 data("fk_rsa2048_aes256gcm/plain_file_key.json"),
-                file("aes256gcm/enc_file.txt"),
-                file("plain_file.txt"),
+                file("aes256gcm/enc_file.b64"),
+                file("plain_file.b64"),
                 true);
     }
 
@@ -28,7 +29,7 @@ public class FileDecryptionTest extends FileDecryptionBaseTest {
             IllegalArgumentException, IllegalStateException, IOException, CryptoSystemException {
         testDecryptSingleBlock(
                 data("fk_rsa2048_aes256gcm/plain_file_key.json"),
-                file("aes256gcm/enc_file_modified.txt"),
+                file("aes256gcm/enc_file_modified.b64"),
                 null,
                 null);
     }
@@ -38,7 +39,7 @@ public class FileDecryptionTest extends FileDecryptionBaseTest {
             IllegalArgumentException, IllegalStateException, IOException, CryptoSystemException {
         testDecryptSingleBlock(
                 data("fk_general/plain_file_key_bad_tag.json"),
-                file("aes256gcm/enc_file.txt"),
+                file("aes256gcm/enc_file.b64"),
                 null,
                 null);
     }
@@ -48,7 +49,7 @@ public class FileDecryptionTest extends FileDecryptionBaseTest {
             IllegalArgumentException, IllegalStateException, IOException, CryptoSystemException {
         testDecryptSingleBlock(
                 data("fk_general/plain_file_key_bad_key.json"),
-                file("aes256gcm/enc_file.txt"),
+                file("aes256gcm/enc_file.b64"),
                 null,
                 null);
     }
@@ -58,7 +59,7 @@ public class FileDecryptionTest extends FileDecryptionBaseTest {
             IllegalArgumentException, IllegalStateException, IOException, CryptoSystemException {
         testDecryptSingleBlock(
                 data("fk_general/plain_file_key_bad_iv.json"),
-                file("aes256gcm/enc_file.txt"),
+                file("aes256gcm/enc_file.b64"),
                 null,
                 null);
     }
@@ -70,8 +71,8 @@ public class FileDecryptionTest extends FileDecryptionBaseTest {
             IllegalStateException, IOException, CryptoSystemException {
         testDecryptMultiBlock(
                 data("fk_rsa2048_aes256gcm/plain_file_key.json"),
-                file("aes256gcm/enc_file.txt"),
-                file("plain_file.txt"),
+                file("aes256gcm/enc_file.b64"),
+                file("plain_file.b64"),
                 true);
     }
 

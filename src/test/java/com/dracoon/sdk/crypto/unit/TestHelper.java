@@ -1,8 +1,8 @@
-package com.dracoon.sdk.crypto;
+package com.dracoon.sdk.crypto.unit;
 
 class TestHelper {
 
-    private static final String PATH_BASE = "";
+    private static final String PATH_BASE = "unit/";
 
     private static final String PATH_DATA = PATH_BASE + "data/";
     private static final String PATH_FILES = PATH_BASE + "files/";
