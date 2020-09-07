@@ -17,7 +17,7 @@ public class PlainFileKey {
      */
     public enum Version implements CryptoVersion {
 
-        AES256GCM("AES-256-GCM");
+        AES256GCM("A");
 
         private final String value;
 

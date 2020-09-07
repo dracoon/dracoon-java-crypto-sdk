@@ -467,14 +467,14 @@ public class CryptoTest {
 
     @Test
     public void testGenerateFileKey_Rsa2048_Success() throws UnknownVersionException {
-        PlainFileKey testPfk = testGenerateFileKey("AES-256-GCM");
-        validateFileKey(testPfk, "AES-256-GCM");
+        PlainFileKey testPfk = testGenerateFileKey("A");
+        validateFileKey(testPfk, "A");
     }
 
     @Test
     public void testGenerateFileKey_Rsa4096_Success() throws UnknownVersionException {
-        PlainFileKey testPfk = testGenerateFileKey("AES-256-GCM");
-        validateFileKey(testPfk, "AES-256-GCM");
+        PlainFileKey testPfk = testGenerateFileKey("A");
+        validateFileKey(testPfk, "A");
     }
 
     private void validateFileKey(PlainFileKey testPfk, String version) {
