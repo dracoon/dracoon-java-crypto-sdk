@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -23,8 +24,18 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
 
+import com.dracoon.sdk.crypto.error.CryptoSystemException;
+import com.dracoon.sdk.crypto.error.InvalidFileKeyException;
+import com.dracoon.sdk.crypto.error.InvalidKeyPairException;
+import com.dracoon.sdk.crypto.error.InvalidPasswordException;
+import com.dracoon.sdk.crypto.internal.AesGcmFileDecryptionCipher;
+import com.dracoon.sdk.crypto.internal.AesGcmFileEncryptionCipher;
+import com.dracoon.sdk.crypto.internal.Validator;
 import com.dracoon.sdk.crypto.model.EncryptedFileKey;
+import com.dracoon.sdk.crypto.model.PlainFileKey;
 import com.dracoon.sdk.crypto.model.UserKeyPair;
+import com.dracoon.sdk.crypto.model.UserPrivateKey;
+import com.dracoon.sdk.crypto.model.UserPublicKey;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.openssl.PEMException;
@@ -42,17 +53,13 @@ import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
 import org.bouncycastle.pkcs.PKCSException;
 import org.bouncycastle.util.io.pem.PemGenerationException;
 
-import com.dracoon.sdk.crypto.model.PlainFileKey;
-import com.dracoon.sdk.crypto.model.UserPrivateKey;
-import com.dracoon.sdk.crypto.model.UserPublicKey;
-
 /**
  * This class is the main class of the Dracoon Crypto Library.<br>
  * <br>
  * The class provides methods for:<br>
- * - User key pair generation: {@link #generateUserKeyPair(String) generateUserKeyPair}<br>
+ * - User key pair generation: {@link #generateUserKeyPair(UserKeyPair.Version, String) generateUserKeyPair}<br>
  * - User key pair check: {@link #checkUserKeyPair(UserKeyPair, String) checkUserKeyPair}<br>
- * - File key generation: {@link #generateFileKey() generateFileKey}<br>
+ * - File key generation: {@link #generateFileKey(PlainFileKey.Version) generateFileKey}<br>
  * - File key encryption: {@link #encryptFileKey(PlainFileKey, UserPublicKey) encryptFileKey}<br>
  * - File key decryption: {@link #decryptFileKey(EncryptedFileKey, UserPrivateKey, String) decryptFileKey}<br>
  * - Cipher creation for file encryption: {@link #createFileEncryptionCipher(PlainFileKey) createFileEncryptionCipher}<br>
@@ -70,6 +77,30 @@ public class Crypto {
 
     private static final String PROP_ALLOW_UNSAFE_INT = "org.bouncycastle.asn1.allow_unsafe_integer";
 
+    private static class VersionMapping {
+
+        UserKeyPair.Version kpv;
+        EncryptedFileKey.Version efkv;
+        PlainFileKey.Version pfkv;
+
+        VersionMapping(UserKeyPair.Version kpv, EncryptedFileKey.Version efkv,
+                PlainFileKey.Version pfkv) {
+            this.kpv = kpv;
+            this.efkv = efkv;
+            this.pfkv = pfkv;
+        }
+
+    }
+
+    private static final VersionMapping[] versionMappings = new VersionMapping[]{
+            new VersionMapping(UserKeyPair.Version.RSA2048,
+                    EncryptedFileKey.Version.RSA2048_AES256GCM,
+                    PlainFileKey.Version.AES256GCM),
+            new VersionMapping(UserKeyPair.Version.RSA4096,
+                    EncryptedFileKey.Version.RSA4096_AES256GCM,
+                    PlainFileKey.Version.AES256GCM)
+    };
+
     private Crypto() {
 
     }
@@ -77,64 +108,58 @@ public class Crypto {
     // --- KEY MANAGEMENT ---
 
     /**
-     * Generates a random user key pair. (The default encryption version "A" is used.)
-     *
-     * @param password The password which should be used to secure the private key.
-     *
-     * @return The generated user key pair.
-     *
-     * @throws InvalidKeyPairException  If the version for the user key pair is not supported.
-     * @throws InvalidPasswordException If the password to secure the private key is invalid.
-     * @throws CryptoSystemException    If a unknown error occurred.
-     */
-    public static UserKeyPair generateUserKeyPair(String password) throws InvalidKeyPairException,
-            InvalidPasswordException, CryptoSystemException {
-        return generateUserKeyPair(CryptoConstants.DEFAULT_VERSION, password);
-    }
-
-    /**
      * Generates a random user key pair.
      *
-     * @param version  The encryption version for which the key pair should be created.
+     * @param version  The version for which the key pair should be created.
      * @param password The password which should be used to secure the private key.
      *
      * @return The generated user key pair.
      *
+     * @throws IllegalArgumentException If a parameter is invalid (e.g. null).
      * @throws InvalidKeyPairException  If the version for the user key pair is not supported.
      * @throws InvalidPasswordException If the password to secure the private key is invalid.
      * @throws CryptoSystemException    If a unknown error occurred.
      */
-    public static UserKeyPair generateUserKeyPair(String version, String password)
-            throws InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        validateUserKeyPairVersion(version);
-        validatePassword(password);
+    public static UserKeyPair generateUserKeyPair(UserKeyPair.Version version, String password)
+            throws IllegalArgumentException, InvalidKeyPairException, InvalidPasswordException,
+            CryptoSystemException {
+        Validator.validateNotNull("version", version);
+        Validator.validateString("password", password);
 
-        KeyPair keyPair;
-        try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-            keyGen.initialize(2048);
-            keyPair = keyGen.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            throw new CryptoSystemException("Could not generate RSA key pair. Algorithm is " +
-                    "missing.", e);
-        }
+        KeyPair keyPair = generateKeyPair(version);
 
         String privateKeyString = encryptPrivateKey(keyPair.getPrivate(), password);
         String publicKeyString = getStringFromPublicKey(keyPair.getPublic());
 
-        UserPrivateKey userPrivateKey = new UserPrivateKey();
-        userPrivateKey.setVersion(version);
-        userPrivateKey.setPrivateKey(privateKeyString);
+        UserPrivateKey userPrivateKey = new UserPrivateKey(version, privateKeyString);
 
-        UserPublicKey userPublicKey = new UserPublicKey();
-        userPublicKey.setVersion(version);
-        userPublicKey.setPublicKey(publicKeyString);
+        UserPublicKey userPublicKey = new UserPublicKey(version, publicKeyString);
 
-        UserKeyPair userKeyPair = new UserKeyPair();
-        userKeyPair.setUserPrivateKey(userPrivateKey);
-        userKeyPair.setUserPublicKey(userPublicKey);
+        return new UserKeyPair(userPrivateKey, userPublicKey);
+    }
 
-        return userKeyPair;
+    private static KeyPair generateKeyPair(UserKeyPair.Version version)
+            throws InvalidKeyPairException, CryptoSystemException {
+        int keySize;
+        switch (version) {
+            case RSA2048:
+                keySize = 2048;
+                break;
+            case RSA4096:
+                keySize = 4096;
+                break;
+            default:
+                throw new InvalidKeyPairException("Unknown user key pair version.");
+        }
+
+        try {
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+            keyGen.initialize(keySize);
+            return keyGen.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            throw new CryptoSystemException("Could not generate RSA key pair. Algorithm is " +
+                    "missing.", e);
+        }
     }
 
     private static String encryptPrivateKey(PrivateKey privateKey, String password)
@@ -180,7 +205,7 @@ public class Crypto {
             obj = pemReader.readObject();
             pemReader.close();
             in.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new InvalidKeyPairException("Could not decrypt private key. PEM decoding failed.",
                     e);
         }
@@ -210,7 +235,7 @@ public class Crypto {
             JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
             return converter.getPrivateKey(pkInfo);
         } catch (PEMException e) {
-            throw new CryptoSystemException("Could not decrypted private key. PEM decoding failed.",
+            throw new InvalidKeyPairException("Could not decrypted private key. PEM decoding failed.",
                     e);
         } finally {
             org.bouncycastle.util.Properties.removeThreadOverride(PROP_ALLOW_UNSAFE_INT);
@@ -230,8 +255,7 @@ public class Crypto {
         }
     }
 
-    private static PublicKey getPublicKeyFromString(String pubKey) throws InvalidKeyPairException,
-            CryptoSystemException {
+    private static PublicKey getPublicKeyFromString(String pubKey) throws InvalidKeyPairException {
         Object obj;
         try {
             ByteArrayInputStream in = new ByteArrayInputStream(pubKey.getBytes());
@@ -239,7 +263,7 @@ public class Crypto {
             obj = pemReader.readObject();
             pemReader.close();
             in.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new InvalidKeyPairException("Could not decode public key. PEM decoding failed.",
                     e);
         }
@@ -257,7 +281,7 @@ public class Crypto {
             JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
             return converter.getPublicKey(pkInfo);
         } catch (PEMException e) {
-            throw new CryptoSystemException("Could not decode public key. PEM decoding failed.", e);
+            throw new InvalidKeyPairException("Could not decode public key. PEM decoding failed.", e);
         } finally {
             org.bouncycastle.util.Properties.removeThreadOverride(PROP_ALLOW_UNSAFE_INT);
         }
@@ -271,13 +295,14 @@ public class Crypto {
      *
      * @return True if the user key pair could be unlocked. Otherwise false.
      *
+     * @throws IllegalArgumentException If a parameter is invalid (e.g. null).
      * @throws InvalidKeyPairException If the user key pair is invalid.
      * @throws CryptoSystemException   If a unknown error occurred.
      */
     public static boolean checkUserKeyPair(UserKeyPair userKeyPair, String password)
             throws InvalidKeyPairException, CryptoSystemException {
-        validateUserKeyPair(userKeyPair);
-        validateUserPrivateKey(userKeyPair.getUserPrivateKey());
+        Validator.validateNotNull("userKeyPair", userKeyPair);
+        Validator.validateString("password", password);
 
         if (password == null || password.isEmpty()) {
             return false;
@@ -288,8 +313,6 @@ public class Crypto {
             return true;
         } catch(InvalidPasswordException e) {
             return false;
-        } catch (InvalidKeyPairException | CryptoSystemException e) {
-            throw e;
         }
     }
 
@@ -303,6 +326,7 @@ public class Crypto {
      *
      * @return The encrypted file key.
      *
+     * @throws IllegalArgumentException If a parameter is invalid (e.g. null).
      * @throws InvalidFileKeyException If the provided plain file key is invalid.
      * @throws InvalidKeyPairException If the provided public key is invalid.
      * @throws CryptoSystemException   If a unknown error occurred.
@@ -310,17 +334,18 @@ public class Crypto {
     public static EncryptedFileKey encryptFileKey(PlainFileKey plainFileKey,
             UserPublicKey userPublicKey) throws InvalidFileKeyException, InvalidKeyPairException,
             CryptoSystemException {
-        validatePlainFileKey(plainFileKey);
-        validateUserPublicKey(userPublicKey);
+        Validator.validateNotNull("plainFileKey", plainFileKey);
+        Validator.validateNotNull("userPublicKey", userPublicKey);
+
+        EncryptedFileKey.Version encFileKeyVersion = getEncryptedFileKeyVersion(
+                userPublicKey.getVersion(), plainFileKey.getVersion());
 
         PublicKey publicKey = getPublicKeyFromString(userPublicKey.getPublicKey());
 
         Cipher cipher;
         try {
-            cipher = Cipher.getInstance("RSA/ECB/OAEPWITHSHA-256ANDMGF1PADDING");
-            AlgorithmParameterSpec spec = new OAEPParameterSpec("SHA-256", "MGF1",
-                    MGF1ParameterSpec.SHA1, PSource.PSpecified.DEFAULT);
-            cipher.init(Cipher.ENCRYPT_MODE, publicKey, spec);
+            cipher = createFileKeyCipher(Cipher.ENCRYPT_MODE, userPublicKey.getVersion(),
+                    publicKey);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException |
                 InvalidAlgorithmParameterException e) {
             throw new CryptoSystemException("Could not encrypt file key. Creation of cipher " +
@@ -337,11 +362,10 @@ public class Crypto {
             throw new CryptoSystemException("Could not encrypt file key. Encryption failed.", e);
         }
 
-        EncryptedFileKey encFileKey = new EncryptedFileKey();
-        encFileKey.setKey(CryptoUtils.byteArrayToString(eFileKey));
-        encFileKey.setIv(plainFileKey.getIv());
+        EncryptedFileKey encFileKey = new EncryptedFileKey(encFileKeyVersion, CryptoUtils
+                .byteArrayToString(eFileKey), plainFileKey.getIv());
+
         encFileKey.setTag(plainFileKey.getTag());
-        encFileKey.setVersion(plainFileKey.getVersion());
 
         return encFileKey;
     }
@@ -355,6 +379,7 @@ public class Crypto {
      *
      * @return The decrypted file key.
      *
+     * @throws IllegalArgumentException If a parameter is invalid (e.g. null).
      * @throws InvalidFileKeyException  If the provided encrypted file key is invalid.
      * @throws InvalidKeyPairException  If the provided private key is invalid.
      * @throws InvalidPasswordException If the provided private key password is invalid.
@@ -363,18 +388,19 @@ public class Crypto {
     public static PlainFileKey decryptFileKey(EncryptedFileKey encFileKey,
             UserPrivateKey userPrivateKey, String password) throws InvalidFileKeyException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        validateEncryptedFileKey(encFileKey);
-        validateUserPrivateKey(userPrivateKey);
-        validatePassword(password);
+        Validator.validateNotNull("encFileKey", encFileKey);
+        Validator.validateNotNull("userPrivateKey", userPrivateKey);
+        Validator.validateString("password", password);
+
+        PlainFileKey.Version plainFileKeyVersion = getPlainFileKeyVersion(
+                userPrivateKey.getVersion(), encFileKey.getVersion());
 
         PrivateKey privateKey = decryptPrivateKey(userPrivateKey.getPrivateKey(), password);
 
         Cipher cipher;
         try {
-            cipher = Cipher.getInstance("RSA/ECB/OAEPWITHSHA-256ANDMGF1PADDING");
-            AlgorithmParameterSpec spec = new OAEPParameterSpec("SHA-256", "MGF1",
-                    MGF1ParameterSpec.SHA1, PSource.PSpecified.DEFAULT);
-            cipher.init(Cipher.DECRYPT_MODE, privateKey, spec);
+            cipher = createFileKeyCipher(Cipher.DECRYPT_MODE, userPrivateKey.getVersion(),
+                    privateKey);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException |
                 InvalidAlgorithmParameterException e) {
             throw new CryptoSystemException("Could not decrypt file key. Creation of cipher " +
@@ -391,30 +417,40 @@ public class Crypto {
             throw new InvalidFileKeyException("Could not decrypt file key. Encryption failed.", e);
         }
 
-        PlainFileKey plainFileKey = new PlainFileKey();
-        plainFileKey.setKey(CryptoUtils.byteArrayToString(dFileKey));
-        plainFileKey.setIv(encFileKey.getIv());
+        PlainFileKey plainFileKey = new PlainFileKey(plainFileKeyVersion, CryptoUtils.
+                byteArrayToString(dFileKey), encFileKey.getIv());
+
         plainFileKey.setTag(encFileKey.getTag());
-        plainFileKey.setVersion(encFileKey.getVersion());
 
         return plainFileKey;
     }
 
-    // --- SYMMETRIC ENCRYPTION AND DECRYPTION ---
-
-    /**
-     * Generates a random file key. (The default encryption version "A" is used.)
-     *
-     * @return The generated file key.
-     */
-    public static PlainFileKey generateFileKey() {
-        try {
-            return generateFileKey(CryptoConstants.DEFAULT_VERSION);
-        } catch (InvalidFileKeyException e) {
-            // Nothing to do here
-            return null;
+    private static Cipher createFileKeyCipher(int mode, UserKeyPair.Version version, Key key)
+            throws InvalidKeyPairException, NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidAlgorithmParameterException, InvalidKeyException {
+        String transformation;
+        AlgorithmParameterSpec spec;
+        switch (version) {
+            case RSA2048:
+                transformation = "RSA/ECB/OAEPWITHSHA-256ANDMGF1PADDING";
+                spec = new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA1,
+                        PSource.PSpecified.DEFAULT);
+                break;
+            case RSA4096:
+                transformation = "RSA/ECB/OAEPWITHSHA-256ANDMGF1PADDING";
+                spec = new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256,
+                        PSource.PSpecified.DEFAULT);
+                break;
+            default:
+                throw new InvalidKeyPairException("Unknown user key pair version.");
         }
+
+        Cipher cipher = Cipher.getInstance(transformation);
+        cipher.init(mode, key, spec);
+        return cipher;
     }
+
+    // --- SYMMETRIC ENCRYPTION AND DECRYPTION ---
 
     /**
      * Generates a random file key.
@@ -423,21 +459,16 @@ public class Crypto {
      *
      * @return The generated file key.
      *
-     * @throws InvalidFileKeyException If the version for the file key is not supported.
+     * @throws IllegalArgumentException If a parameter is invalid (e.g. null).
      */
-    public static PlainFileKey generateFileKey(String version) throws InvalidFileKeyException {
-        validateFileKeyVersion(version);
+    public static PlainFileKey generateFileKey(PlainFileKey.Version version) {
+        Validator.validateNotNull("version", version);
 
         byte[] key = generateSecureRandomByteArray(FILE_KEY_SIZE);
         byte[] iv = generateSecureRandomByteArray(IV_SIZE);
 
-        PlainFileKey fileKey = new PlainFileKey();
-        fileKey.setKey(CryptoUtils.byteArrayToString(key));
-        fileKey.setIv(CryptoUtils.byteArrayToString(iv));
-        fileKey.setTag(null);
-        fileKey.setVersion(version);
-
-        return fileKey;
+        return new PlainFileKey(version, CryptoUtils.byteArrayToString(key), CryptoUtils
+                .byteArrayToString(iv));
     }
 
     private static byte[] generateSecureRandomByteArray(int size) {
@@ -454,13 +485,13 @@ public class Crypto {
      *
      * @return The file encryption cipher.
      *
-     * @throws InvalidFileKeyException If the provided file key is invalid.
+     * @throws IllegalArgumentException If a parameter is invalid (e.g. null).
      * @throws CryptoSystemException   If a unknown error occurred.
      */
     public static FileEncryptionCipher createFileEncryptionCipher(PlainFileKey fileKey)
-            throws InvalidFileKeyException, CryptoSystemException {
-        validatePlainFileKey(fileKey);
-        return new FileEncryptionCipher(fileKey);
+            throws CryptoSystemException {
+        Validator.validateNotNull("fileKey", fileKey);
+        return new AesGcmFileEncryptionCipher(fileKey);
     }
 
     /**
@@ -470,92 +501,43 @@ public class Crypto {
      *
      * @return The file decryption cipher.
      *
-     * @throws InvalidFileKeyException If the provided file key is invalid.
+     * @throws IllegalArgumentException If a parameter is invalid (e.g. null).
      * @throws CryptoSystemException   If a unknown error occurred.
      */
     public static FileDecryptionCipher createFileDecryptionCipher(PlainFileKey fileKey)
-            throws InvalidFileKeyException, CryptoSystemException {
-        validatePlainFileKey(fileKey);
-        return new FileDecryptionCipher(fileKey);
+            throws CryptoSystemException {
+        Validator.validateNotNull("fileKey", fileKey);
+        return new AesGcmFileDecryptionCipher(fileKey);
     }
 
-    // --- VALIDATORS ---
+    // --- COMPATIBILITY CHECK ---
 
-    private static void validatePassword(String password) throws InvalidPasswordException {
-        if (password == null || password.isEmpty()) {
-            throw new InvalidPasswordException("Password cannot be null or empty.");
-        }
-    }
-
-    private static void validateUserKeyPair(UserKeyPair userKeyPair)
-            throws InvalidKeyPairException {
-        if (userKeyPair == null) {
-            throw new InvalidKeyPairException("User key pair cannot be null.");
-        }
-    }
-
-    private static void validateUserKeyPairVersion(String version) throws InvalidKeyPairException {
-        if (version == null || version.isEmpty() ||
-                !version.equals(CryptoConstants.DEFAULT_VERSION)) {
-            throw new InvalidKeyPairException("Unknown user key pair version.");
-        }
-    }
-
-    private static void validateUserPrivateKey(UserPrivateKey privateKey)
-            throws InvalidKeyPairException {
-        if (privateKey == null) {
-            throw new InvalidKeyPairException("Private key container cannot be null.");
-        }
-        String version = privateKey.getVersion();
-        if (version == null || !version.equals(CryptoConstants.DEFAULT_VERSION)) {
-            throw new InvalidKeyPairException("Unknown private key version.");
-        }
-        String pk = privateKey.getPrivateKey();
-        if (pk == null || pk.isEmpty()) {
-            throw new InvalidKeyPairException("Private key cannot be null or empty.");
-        }
-    }
-
-    private static void validateUserPublicKey(UserPublicKey publicKey)
-            throws InvalidKeyPairException {
-        if (publicKey == null) {
-            throw new InvalidKeyPairException("Public key container cannot be null.");
-        }
-        String version = publicKey.getVersion();
-        if (version == null || !version.equals(CryptoConstants.DEFAULT_VERSION)) {
-            throw new InvalidKeyPairException("Unknown public key version.");
-        }
-        String pk = publicKey.getPublicKey();
-        if (pk == null || pk.isEmpty()) {
-            throw new InvalidKeyPairException("Public key cannot be null or empty.");
-        }
-    }
-
-    private static void validateFileKeyVersion(String version) throws InvalidFileKeyException {
-        if (version == null || version.isEmpty()) {
-            throw new InvalidFileKeyException("Unknown file key version.");
-        }
-    }
-
-    private static void validatePlainFileKey(PlainFileKey fileKey) throws InvalidFileKeyException {
-        if (fileKey == null) {
-            throw new InvalidFileKeyException("File key cannot be null.");
-        }
-        String version = fileKey.getVersion();
-        if (version == null || !version.equals(CryptoConstants.DEFAULT_VERSION)) {
-            throw new InvalidFileKeyException("Unknown file key version.");
-        }
-    }
-
-    private static void validateEncryptedFileKey(EncryptedFileKey fileKey)
+    private static EncryptedFileKey.Version getEncryptedFileKeyVersion(
+            UserKeyPair.Version keyPairVersion, PlainFileKey.Version fileKeyVersion)
             throws InvalidFileKeyException {
-        if (fileKey == null) {
-            throw new InvalidFileKeyException("File key cannot be null.");
+        for (VersionMapping versionMapping : versionMappings) {
+            if (versionMapping.kpv == keyPairVersion && versionMapping.pfkv == fileKeyVersion) {
+                return versionMapping.efkv;
+            }
         }
-        String version = fileKey.getVersion();
-        if (version == null || !version.equals(CryptoConstants.DEFAULT_VERSION)) {
-            throw new InvalidFileKeyException("Unknown file key version.");
+        String kpv = keyPairVersion != null ? keyPairVersion.name() : "null";
+        String fkv = fileKeyVersion != null ? fileKeyVersion.name() : "null";
+        throw new InvalidFileKeyException(String.format("User key pair version '%s' and plain " +
+                "file key version '%s' are not compatible.", kpv, fkv));
+    }
+
+    private static PlainFileKey.Version getPlainFileKeyVersion(
+            UserKeyPair.Version keyPairVersion, EncryptedFileKey.Version fileKeyVersion)
+            throws InvalidFileKeyException {
+        for (VersionMapping versionMapping : versionMappings) {
+            if (versionMapping.kpv == keyPairVersion && versionMapping.efkv == fileKeyVersion) {
+                return versionMapping.pfkv;
+            }
         }
+        String kpv = keyPairVersion != null ? keyPairVersion.name() : "null";
+        String fkv = fileKeyVersion != null ? fileKeyVersion.name() : "null";
+        throw new InvalidFileKeyException(String.format("User key pair version '%s' and encrypted " +
+                "file key version '%s' are not compatible.", kpv, fkv));
     }
 
 }

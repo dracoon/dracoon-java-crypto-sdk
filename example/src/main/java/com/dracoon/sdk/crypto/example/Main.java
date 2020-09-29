@@ -5,10 +5,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import com.dracoon.sdk.crypto.Crypto;
-import com.dracoon.sdk.crypto.CryptoException;
 import com.dracoon.sdk.crypto.CryptoUtils;
 import com.dracoon.sdk.crypto.FileDecryptionCipher;
 import com.dracoon.sdk.crypto.FileEncryptionCipher;
+import com.dracoon.sdk.crypto.error.CryptoException;
 import com.dracoon.sdk.crypto.model.EncryptedDataContainer;
 import com.dracoon.sdk.crypto.model.EncryptedFileKey;
 import com.dracoon.sdk.crypto.model.PlainDataContainer;
@@ -34,7 +34,8 @@ public class Main {
     public static void main(String[] args) throws Exception {
         // --- INITIALIZATION ---
         // Generate key pair
-        UserKeyPair userKeyPair = Crypto.generateUserKeyPair(USER_PASSWORD);
+        UserKeyPair userKeyPair = Crypto.generateUserKeyPair(UserKeyPair.Version.RSA2048,
+                USER_PASSWORD);
         // Check key pair
         if (!Crypto.checkUserKeyPair(userKeyPair, USER_PASSWORD)) {
             System.out.println("Invalid user password!");
@@ -50,7 +51,7 @@ public class Main {
 
         // --- ENCRYPTION ---
         // Generate plain file key
-        PlainFileKey fileKey = Crypto.generateFileKey();
+        PlainFileKey fileKey = Crypto.generateFileKey(PlainFileKey.Version.AES256GCM);
         // Encrypt blocks
         byte[] encData = encryptData(fileKey, plainData);
         // Encrypt file key
