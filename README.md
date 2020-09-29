@@ -14,7 +14,7 @@ https://support.dracoon.com/hc/en-us/articles/360000986345
 
 #### Minimum Requirements
 
-Java 6 or newer
+Java 8 or newer
 
 #### Download
 
@@ -23,13 +23,13 @@ Maven: Add this dependency to your pom.xml:
 <dependency>
     <groupId>com.dracoon</groupId>
     <artifactId>dracoon-crypto-sdk</artifactId>
-    <version>1.0.1</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
 Gradle: Add this dependency to your build.gradle:
 ```groovy
-compile 'com.dracoon:dracoon-crypto-sdk:1.0.1'
+compile 'com.dracoon:dracoon-crypto-sdk:2.0.0'
 ```
 
 JAR import: The latest JAR can be found [here](
@@ -39,48 +39,49 @@ Note that you also need to include the following dependencies:
 1. Bouncy Castle Provider: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
 2. Bouncy Castle PKIX/CMS/...: https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on
 
-#### Download for Android
-
-The Android platform unfortunately ships with a cut-down version of Bouncy Castle. This makes it
-difficult to use libraries that have an updated version of Bouncy Castle as a dependency.
-
-To solve this issue, there is a second version of the Crypto SDK which uses Spongy Castle.
-
-Maven: Add this dependency to your pom.xml:
-```xml
-<dependency>
-    <groupId>com.dracoon</groupId>
-    <artifactId>dracoon-android-crypto-sdk</artifactId>
-    <version>1.0.1</version>
-</dependency>
-```
-
-Gradle: Add this dependency to your build.gradle:
-```groovy
-compile 'com.dracoon:dracoon-android-crypto-sdk:1.0.1'
-```
-
-JAR import: The latest JAR can be found [here](
-https://github.com/dracoon/dracoon-java-crypto-sdk/releases).
-
-Note that you also need to include the following dependencies:
-1. Spongy Castle Provider: https://mvnrepository.com/artifact/com.madgag.spongycastle/prov
-2. Spongy Castle PKIX/CMS/...: https://mvnrepository.com/artifact/com.madgag.spongycastle/pkix
-
 #### Java JCE Setup
 
-**IMPORTANT FOR JAVA VERSIONS 6 (<191), 7 (<181) and 8 (<162):**
+**IMPORTANT FOR JAVA VERSION 8 (<162):**
 
 You need to install the Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy
 Files. Otherwise you'll get an exception about key length or an exception when parsing PKCS private
 keys.
 
 The Unlimited Strength Jurisdiction Policy File can be found here:
-- Java 6: https://www.oracle.com/technetwork/java/javase/downloads/jce-6-download-429243.html
-- Java 7: https://www.oracle.com/technetwork/java/javase/downloads/jce-7-download-432124.html
 - Java 8: https://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html
 
+For Java 9 and above, the Unlimited Strength Jurisdiction Policy Files are no longer needed.
 (For more information see: https://stackoverflow.com/questions/1179672)
+
+#### Usage on Android
+
+The Android platform ships with a cut-down version of Bouncy Castle. In the past (pre-Android 3.0),
+this caused conflicts and there was a separate version of the Crypto SDK for Android which used
+Spongy Castle.
+
+Because there are very few people who use pre-Android 3.0 devices, and the fact that Spongy Castle
+is not maintained anymore, there is no longer a separate version.
+
+To avoid problems you should reinitialize the Bouncy Castle security provider when your application
+starts. This can be done by extending `Application` and using a static initialization block. See
+following example.
+
+```java
+...
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+public class DracoonApplication extends Application {
+    
+    static {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.addProvider(new BouncyCastleProvider());
+    }
+
+    ...
+    
+}
+```
 
 # Example
 
@@ -93,7 +94,8 @@ keypair, generate file key, encrypt file key, and finally encrypt and decrypt a 
 public static void main(String[] args) throws Exception {
     // --- INITIALIZATION ---
     // Generate key pair
-    UserKeyPair userKeyPair = Crypto.generateUserKeyPair(USER_PASSWORD);
+    UserKeyPair userKeyPair = Crypto.generateUserKeyPair(UserKeyPair.Version.RSA2048,
+            USER_PASSWORD);
     // Check key pair
     if (!Crypto.checkUserKeyPair(userKeyPair, USER_PASSWORD)) {
         ...
@@ -105,7 +107,7 @@ public static void main(String[] args) throws Exception {
 
     // --- ENCRYPTION ---
     // Generate plain file key
-    PlainFileKey fileKey = Crypto.generateFileKey();
+    PlainFileKey fileKey = Crypto.generateFileKey(PlainFileKey.Version.AES256GCM);
     // Encrypt blocks
     byte[] encData = encryptData(fileKey, plainData);
     // Encrypt file key
@@ -134,7 +136,7 @@ keep the code as readable as possible.
 
 # Copyright and License
 
-Copyright 2017 Dracoon GmbH. All rights reserved.
+Copyright Dracoon GmbH. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
 compliance with the License. You may obtain a copy of the License at
