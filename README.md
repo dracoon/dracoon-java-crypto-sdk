@@ -39,34 +39,6 @@ Note that you also need to include the following dependencies:
 1. Bouncy Castle Provider: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
 2. Bouncy Castle PKIX/CMS/...: https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on
 
-#### Download for Android
-
-The Android platform unfortunately ships with a cut-down version of Bouncy Castle. This makes it
-difficult to use libraries that have an updated version of Bouncy Castle as a dependency.
-
-To solve this issue, there is a second version of the Crypto SDK which uses Spongy Castle.
-
-Maven: Add this dependency to your pom.xml:
-```xml
-<dependency>
-    <groupId>com.dracoon</groupId>
-    <artifactId>dracoon-android-crypto-sdk</artifactId>
-    <version>2.0.0</version>
-</dependency>
-```
-
-Gradle: Add this dependency to your build.gradle:
-```groovy
-compile 'com.dracoon:dracoon-android-crypto-sdk:2.0.0'
-```
-
-JAR import: The latest JAR can be found [here](
-https://github.com/dracoon/dracoon-java-crypto-sdk/releases).
-
-Note that you also need to include the following dependencies:
-1. Spongy Castle Provider: https://mvnrepository.com/artifact/com.madgag.spongycastle/prov
-2. Spongy Castle PKIX/CMS/...: https://mvnrepository.com/artifact/com.madgag.spongycastle/pkix
-
 #### Java JCE Setup
 
 **IMPORTANT FOR JAVA VERSION 8 (<162):**
@@ -80,6 +52,36 @@ The Unlimited Strength Jurisdiction Policy File can be found here:
 
 For Java 9 and above, the Unlimited Strength Jurisdiction Policy Files are no longer needed.
 (For more information see: https://stackoverflow.com/questions/1179672)
+
+#### Usage on Android
+
+The Android platform ships with a cut-down version of Bouncy Castle. In the past (pre-Android 3.0),
+this caused conflicts and there was a separate version of the Crypto SDK for Android which used
+Spongy Castle.
+
+Because there are very few people who use pre-Android 3.0 devices, and the fact that Spongy Castle
+is not maintained anymore, there is no longer a separate version.
+
+To avoid problems you should reinitialize the Bouncy Castle security provider when your application
+starts. This can be done by extending `Application` and using a static initialization block. See
+following example.
+
+```java
+...
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+public class DracoonApplication extends Application {
+    
+    static {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.addProvider(new BouncyCastleProvider());
+    }
+
+    ...
+    
+}
+```
 
 # Example
 
