@@ -11,7 +11,12 @@ import com.dracoon.sdk.crypto.model.PlainDataContainer;
 public interface FileDecryptionCipher {
 
     /**
-     * Decrypts some bytes.
+     * Decrypts some bytes.<br>
+     * <br>
+     * IMPORTANT!!!: After all encrypted bytes have been processed, {@link
+     * #doFinal(EncryptedDataContainer encData) doFinal} must be called to complete the decryption.
+     * As long as the decryption is not finished, the integrity of the decrypted bytes is not
+     * guaranteed!
      *
      * @param encData The data container with the bytes to decrypt.
      *
@@ -25,9 +30,11 @@ public interface FileDecryptionCipher {
             IllegalStateException, CryptoSystemException;
 
     /**
-     * Completes the decryption. After this method is called no further calls of
-     * {@link #processBytes(EncryptedDataContainer encData) processBytes} and
-     * {@link #doFinal(EncryptedDataContainer encData) doFinal} are possible.
+     * Completes the decryption and verifies the integrity of decrypted bytes.<br>
+     * <br>
+     * After this method is called no further calls of {@link
+     * #processBytes(EncryptedDataContainer encData) processBytes} and {@link
+     * #doFinal(EncryptedDataContainer encData) doFinal} are possible.
      *
      * @param encData The data container with the previously calculated tag.
      *

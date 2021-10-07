@@ -453,7 +453,13 @@ public class Crypto {
     // --- SYMMETRIC ENCRYPTION AND DECRYPTION ---
 
     /**
-     * Generates a random file key.
+     * Generates a random file key.<br>
+     * <br>
+     * IMPORTANT!!!: Never reuse the returned file key! Use the returned file key only for the
+     * encryption of one file!<br>
+     * <br>
+     * The file key consists of a cryptographic key and initialization vector. If you reuse both,
+     * you compromise the privacy of the encrypted file!
      *
      * @param version The encryption version for which the file key should be created.
      *
