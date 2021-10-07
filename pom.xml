@@ -49,7 +49,7 @@
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <maven-nexus-staging-plugin.version>1.6.7</maven-nexus-staging-plugin.version>
 
-        <java-version>1.8</java-version>
+        <java-version>8</java-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <bouncycastle.version>1.69</bouncycastle.version>
