@@ -51,6 +51,8 @@ public class Main {
 
         // --- ENCRYPTION ---
         // Generate plain file key
+        // Important!!!: Never reuse the file key! Use the file key only for one file! If you reuse
+        //               the file key, you compromise the privacy of the encrypted file!
         PlainFileKey fileKey = Crypto.generateFileKey(PlainFileKey.Version.AES256GCM);
         // Encrypt blocks
         byte[] encData = encryptData(fileKey, plainData);
@@ -157,6 +159,8 @@ public class Main {
             PlainDataContainer pDataContainer;
 
             // Decrypt blocks
+            // Important!!!: The integrity of the plain data is not guaranteed till the decryption
+            //               is completed.
             while ((count = is.read(buffer)) != -1) {
                 byte[] eData = createByteArray(buffer, count);
                 pDataContainer = cipher.processBytes(new EncryptedDataContainer(eData, null));
