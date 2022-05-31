@@ -1,0 +1,86 @@
+stages:
+  - build
+  - test
+  - deploy
+
+image:
+  name: maven:3-openjdk-8
+
+cache:
+  paths:
+    - .m2/repository
+
+.job-template:
+  secrets:
+    ARTIFACTORY_DOMAIN:
+      vault: Artifactory/domain@Build-Environment
+      file: false
+    ARTIFACTORY_USERNAME:
+      vault: Artifactory/user-write-username@Build-Environment
+      file: false
+    ARTIFACTORY_PASSWORD:
+      vault: Artifactory/user-write-password@Build-Environment
+      file: false
+  before_script:
+    - ./configure_maven.sh
+
+build:
+  extends: .job-template
+  stage: build
+  script:
+    - mvn clean package -DskipTests
+  artifacts:
+    paths:
+      - target
+
+unit test:
+  extends: .job-template
+  stage: test
+  needs:
+    - build
+  script:
+    - mvn test
+  artifacts:
+    when: always
+    paths:
+      - target/surefire-reports
+    reports:
+      junit: target/surefire-reports/TEST-*.xml
+
+integration test:
+  extends: .job-template
+  stage: test
+  needs:
+    - build
+  script:
+    - mvn verify
+  artifacts:
+    when: always
+    paths:
+      - target/failsafe-reports
+    reports:
+      junit: target/failsafe-reports/TEST-*.xml
+
+deploy development:
+  extends: .job-template
+  stage: deploy
+  needs:
+    - build
+    - unit test
+    - integration test
+  except:
+    - master
+  script:
+    - mvn -Pdevelopment deploy -DskipTests
+
+deploy release:
+  extends: .job-template
+  stage: deploy
+  needs:
+    - build
+    - unit test
+    - integration test
+  only:
+    - master
+  script:
+    - mvn -Prelease deploy -DskipTests
