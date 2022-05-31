@@ -1,6 +1,19 @@
-.idea/
-.settings/
-target/
-.classpath
-.project
-dracoon-crypto-sdk.iml
+# IntelliJ project files
+/.idea/libraries/
+/.idea/shelf/
+/.idea/jarRepositories.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/uiDesigner.xml
+/.idea/workspace.xml
+/target/
+*.iml
+
+# Eclipse project files
+/.settings/
+/.classpath
+/.project
+
+# OS-specific files
+.DS_Store
+Thumbs.db
