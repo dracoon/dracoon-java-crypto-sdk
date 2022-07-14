@@ -15,6 +15,16 @@ if [ -z "${ARTIFACTORY_PASSWORD}" ]; then
     exit 3
 fi
 
+if [ -z "${SONAR_DOMAIN}" ]; then
+    echo "Environment variable SONAR_DOMAIN is not set. Aborting ..."
+    exit 4
+fi
+
+if [ -z "${SONAR_LOGIN}" ]; then
+    echo "Environment variable SONAR_LOGIN is not set. Aborting ..."
+    exit 5
+fi
+
 mkdir -p ~/.m2
 
 cp settings.xml.tmpl ~/.m2/settings.xml

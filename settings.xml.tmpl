@@ -72,6 +72,16 @@
                 </pluginRepository>
             </pluginRepositories>
         </profile>
+        <profile>
+            <id>sonar</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <sonar.domain>${env.SONAR_DOMAIN}</sonar.domain>
+                <sonar.login>${env.SONAR_LOGIN}</sonar.login>
+            </properties>
+        </profile>
     </profiles>
 
 </settings>

@@ -1,6 +1,8 @@
 stages:
   - build
   - test
+  - report
+  - analyze
   - deploy
 
 image:
@@ -20,6 +22,12 @@ cache:
       file: false
     ARTIFACTORY_PASSWORD:
       vault: Artifactory/user-write-password@Build-Environment
+      file: false
+    SONAR_DOMAIN:
+      vault: Sonar/domain@Build-Environment
+      file: false
+    SONAR_LOGIN:
+      vault: Sonar/access-key@Build-Environment
       file: false
   before_script:
     - ./configure_maven.sh
@@ -67,6 +75,28 @@ integration test:
       - target/site/jacoco-it
     reports:
       junit: target/failsafe-reports/TEST-*.xml
+
+dependencies check:
+  extends: .job-template
+  stage: report
+  needs:
+    - build
+  script:
+    - mvn dependency-check:check
+  artifacts:
+    paths:
+      - target/dependency-check-reports
+
+sonar:
+  extends: .job-template
+  stage: analyze
+  needs:
+    - build
+    - unit test
+    - integration test
+    - dependencies check
+  script:
+    - mvn -Dsonar.scm.revision=$CI_COMMIT_SHORT_SHA -Dsonar.branch.name=$CI_COMMIT_REF_NAME sonar:sonar
 
 deploy development:
   extends: .job-template

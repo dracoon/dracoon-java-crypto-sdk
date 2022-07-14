@@ -1,9 +1,11 @@
 # IntelliJ project files
 /.idea/libraries/
 /.idea/shelf/
+/.idea/sonarlint/
 /.idea/jarRepositories.xml
 /.idea/misc.xml
 /.idea/modules.xml
+/.idea/sonarlint.xml
 /.idea/uiDesigner.xml
 /.idea/workspace.xml
 /target/
