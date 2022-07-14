@@ -14,7 +14,7 @@ import com.dracoon.sdk.crypto.model.PlainFileKey;
 
 import static org.junit.Assert.*;
 
-public class FileDecryptionBaseTest {
+public abstract class FileDecryptionBaseTest {
 
     // ### SINGLE BLOCK ENCRYPTION TESTS ###
 
