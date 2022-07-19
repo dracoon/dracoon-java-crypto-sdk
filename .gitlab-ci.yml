@@ -6,7 +6,7 @@ stages:
   - deploy
 
 image:
-  name: maven:3-openjdk-8
+  name: maven:3-openjdk-11
 
 cache:
   paths:
