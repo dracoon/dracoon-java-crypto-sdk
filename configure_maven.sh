@@ -25,6 +25,16 @@ if [ -z "${SONAR_LOGIN}" ]; then
     exit 5
 fi
 
+if [ -z "${SONATYPE_OSSRH_REPO_USERNAME}" ]; then
+    echo "Environment variable SONATYPE_OSSRH_REPO_USERNAME is not set. Aborting ..."
+    exit 6
+fi
+
+if [ -z "${SONATYPE_OSSRH_REPO_TOKEN}" ]; then
+    echo "Environment variable SONATYPE_OSSRH_REPO_TOKEN is not set. Aborting ..."
+    exit 7
+fi
+
 mkdir -p ~/.m2
 
 cp settings.xml.tmpl ~/.m2/settings.xml

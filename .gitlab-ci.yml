@@ -4,6 +4,7 @@ stages:
   - report
   - analyze
   - deploy
+  - rollout
 
 image:
   name: maven:3-openjdk-11
@@ -29,7 +30,26 @@ cache:
     SONAR_LOGIN:
       vault: Sonar/access-key@Build-Environment
       file: false
+    SONATYPE_OSSRH_SIGN_KEY_NAME:
+      vault: sonatype-ossrh-signing/name@Build-Environment
+      file: false
+    SONATYPE_OSSRH_SIGN_KEY_PASSPHRASE:
+      vault: sonatype-ossrh-signing/passphrase@Build-Environment
+      file: false
+    SONATYPE_OSSRH_SIGN_SECRING:
+      vault: sonatype-ossrh-signing/secring@Build-Environment
+      file: false
+    SONATYPE_OSSRH_SIGN_PUBRING:
+      vault: sonatype-ossrh-signing/pubring@Build-Environment
+      file: false
+    SONATYPE_OSSRH_REPO_USERNAME:
+      vault: sonatype-ossrh-repository/username@Build-Environment
+      file: false
+    SONATYPE_OSSRH_REPO_TOKEN:
+      vault: sonatype-ossrh-repository/token@Build-Environment
+      file: false
   before_script:
+    - ./configure_gnupg.sh
     - ./configure_maven.sh
 
 build:
@@ -121,3 +141,16 @@ deploy release:
     - master
   script:
     - mvn -Prelease deploy -DskipTests
+
+rollout:
+  extends: .job-template
+  stage: rollout
+  needs:
+    - build
+    - unit test
+    - integration test
+  only:
+    - master
+  when: manual
+  script:
+    - mvn -Prollout deploy -DskipTests -Dgpg.keyname=$SONATYPE_OSSRH_SIGN_KEY_NAME -Dgpg.passphrase=$SONATYPE_OSSRH_SIGN_KEY_PASSPHRASE
