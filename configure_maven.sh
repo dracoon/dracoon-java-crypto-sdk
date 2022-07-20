@@ -38,3 +38,6 @@ fi
 mkdir -p ~/.m2
 
 cp settings.xml.tmpl ~/.m2/settings.xml
+
+mkdir -p .m2/repository
+ln -s $(pwd)/.m2/repository ~/.m2/repository
