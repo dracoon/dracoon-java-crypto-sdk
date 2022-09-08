@@ -31,12 +31,8 @@ public abstract class AesGcmFileCipher {
 
     protected byte[] process(byte[] block, boolean isLastBlock) throws BadFileException,
             IllegalStateException, CryptoSystemException {
-        ByteArrayInputStream in = null;
-        ByteArrayOutputStream out = null;
-        try {
-            in = new ByteArrayInputStream(block);
-            out = new ByteArrayOutputStream();
-
+        try (ByteArrayInputStream in = new ByteArrayInputStream(block);
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[BLOCK_SIZE];
             byte[] encBuffer = new byte[BLOCK_SIZE + TAG_SIZE];
             int bytesRead;
@@ -53,7 +49,7 @@ public abstract class AesGcmFileCipher {
 
             out.flush();
             return out.toByteArray();
-        } catch(IOException e) {
+        } catch (IOException e) {
             throw new CryptoSystemException("Could not en/decrypt file. Buffer read/write failed.",
                     e);
         } catch (IllegalStateException e) {
@@ -61,17 +57,6 @@ public abstract class AesGcmFileCipher {
                     "state.", e);
         } catch (InvalidCipherTextException e) {
             throw new BadFileException("Could not en/decrypt file. File content is bad.", e);
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException e) {
-                // Nothing to do here
-            }
         }
     }
 

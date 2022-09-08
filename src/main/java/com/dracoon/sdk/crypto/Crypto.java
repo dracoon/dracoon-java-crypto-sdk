@@ -123,8 +123,9 @@ public class Crypto {
     public static UserKeyPair generateUserKeyPair(UserKeyPair.Version version, String password)
             throws IllegalArgumentException, InvalidKeyPairException, InvalidPasswordException,
             CryptoSystemException {
-        Validator.validateNotNull("version", version);
-        Validator.validateString("password", password);
+        // SONAR: Constants for the parameter names would be overkill
+        Validator.validateNotNull("version", version); //NOSONAR
+        Validator.validateString("password", password); //NOSONAR
 
         KeyPair keyPair = generateKeyPair(version);
 
@@ -169,7 +170,7 @@ public class Crypto {
             encryptor = new JceOpenSSLPKCS8EncryptorBuilder(PKCS8Generator.AES_256_CBC)
                     .setProvider("BC")
                     .setIterationCount(HASH_ITERATION_COUNT)
-                    .setPasssword(password.toCharArray())
+                    .setPassword(password.toCharArray())
                     .build();
         } catch (OperatorCreationException e) {
             throw new CryptoSystemException("Could not encrypt private key. Creation of PKCS8" +
@@ -301,8 +302,9 @@ public class Crypto {
      */
     public static boolean checkUserKeyPair(UserKeyPair userKeyPair, String password)
             throws InvalidKeyPairException, CryptoSystemException {
-        Validator.validateNotNull("userKeyPair", userKeyPair);
-        Validator.validateString("password", password);
+        // SONAR: Constants for the parameter names would be overkill
+        Validator.validateNotNull("userKeyPair", userKeyPair); //NOSONAR
+        Validator.validateString("password", password); //NOSONAR
 
         if (password == null || password.isEmpty()) {
             return false;
@@ -334,8 +336,9 @@ public class Crypto {
     public static EncryptedFileKey encryptFileKey(PlainFileKey plainFileKey,
             UserPublicKey userPublicKey) throws InvalidFileKeyException, InvalidKeyPairException,
             CryptoSystemException {
-        Validator.validateNotNull("plainFileKey", plainFileKey);
-        Validator.validateNotNull("userPublicKey", userPublicKey);
+        // SONAR: Constants for the parameter names would be overkill
+        Validator.validateNotNull("plainFileKey", plainFileKey); //NOSONAR
+        Validator.validateNotNull("userPublicKey", userPublicKey); //NOSONAR
 
         EncryptedFileKey.Version encFileKeyVersion = getEncryptedFileKeyVersion(
                 userPublicKey.getVersion(), plainFileKey.getVersion());
@@ -388,9 +391,10 @@ public class Crypto {
     public static PlainFileKey decryptFileKey(EncryptedFileKey encFileKey,
             UserPrivateKey userPrivateKey, String password) throws InvalidFileKeyException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        Validator.validateNotNull("encFileKey", encFileKey);
-        Validator.validateNotNull("userPrivateKey", userPrivateKey);
-        Validator.validateString("password", password);
+        // SONAR: Constants for the parameter names would be overkill
+        Validator.validateNotNull("encFileKey", encFileKey); //NOSONAR
+        Validator.validateNotNull("userPrivateKey", userPrivateKey); //NOSONAR
+        Validator.validateString("password", password); //NOSONAR
 
         PlainFileKey.Version plainFileKeyVersion = getPlainFileKeyVersion(
                 userPrivateKey.getVersion(), encFileKey.getVersion());
@@ -468,7 +472,8 @@ public class Crypto {
      * @throws IllegalArgumentException If a parameter is invalid (e.g. null).
      */
     public static PlainFileKey generateFileKey(PlainFileKey.Version version) {
-        Validator.validateNotNull("version", version);
+        // SONAR: Constants for the parameter names would be overkill
+        Validator.validateNotNull("version", version); //NOSONAR
 
         byte[] key = generateSecureRandomByteArray(FILE_KEY_SIZE);
         byte[] iv = generateSecureRandomByteArray(IV_SIZE);
@@ -496,7 +501,8 @@ public class Crypto {
      */
     public static FileEncryptionCipher createFileEncryptionCipher(PlainFileKey fileKey)
             throws CryptoSystemException {
-        Validator.validateNotNull("fileKey", fileKey);
+        // SONAR: Constants for the parameter names would be overkill
+        Validator.validateNotNull("fileKey", fileKey); //NOSONAR
         return new AesGcmFileEncryptionCipher(fileKey);
     }
 
@@ -512,7 +518,8 @@ public class Crypto {
      */
     public static FileDecryptionCipher createFileDecryptionCipher(PlainFileKey fileKey)
             throws CryptoSystemException {
-        Validator.validateNotNull("fileKey", fileKey);
+        // SONAR: Constants for the parameter names would be overkill
+        Validator.validateNotNull("fileKey", fileKey); //NOSONAR
         return new AesGcmFileDecryptionCipher(fileKey);
     }
 
