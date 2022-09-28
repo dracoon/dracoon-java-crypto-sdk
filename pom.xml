@@ -9,7 +9,7 @@
     <artifactId>dracoon-crypto-sdk</artifactId>
     <version>2.0.4-SNAPSHOT</version>
 
-    <name>dracoon-crypto-sdk</name>
+    <name>Dracoon Crypto SDK</name>
     <description>A library which implements the client-side encryption of Dracoon.</description>
     <url>https://github.com/dracoon/dracoon-java-crypto-sdk</url>
 
