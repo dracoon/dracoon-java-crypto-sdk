@@ -67,7 +67,8 @@
 
         <!-- sonar -->
         <sonar.host.url>https://${sonar.domain}</sonar.host.url>
-        <sonar.projectName>${project.name}</sonar.projectName>
+        <sonar.projectKey>dracoon-java-crypto-sdk</sonar.projectKey>
+        <sonar.projectName>DRACOON Java Crypto SDK</sonar.projectName>
         <sonar.projectVersion>${project.version}</sonar.projectVersion>
         <sonar.scm.provider>git</sonar.scm.provider>
         <sonar.scm.revision>unknown</sonar.scm.revision> <!-- Overwritten by GitLab pipeline -->
