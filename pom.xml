@@ -52,7 +52,7 @@
         <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>3.0.0</maven-failsafe-plugin.version>
         <maven-jacoco-plugin.version>0.8.8</maven-jacoco-plugin.version>
-        <maven-dependency-check-plugin.version>7.1.1</maven-dependency-check-plugin.version>
+        <maven-dependency-check-plugin.version>7.4.4</maven-dependency-check-plugin.version>
         <maven-sonar-plugin.version>3.9.1.2184</maven-sonar-plugin.version>
         <maven-deploy-plugin.version>3.1.0</maven-deploy-plugin.version>
         <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
@@ -263,13 +263,13 @@
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
                 <configuration>
-                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                    <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
                     <outputDirectory>target/dependency-check-reports</outputDirectory>
                     <formats>
                         <format>HTML</format>
                         <format>JSON</format>
                     </formats>
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                    <suppressionFile>dependency-check-suppressions.xml</suppressionFile>
                 </configuration>
             </plugin>
         </plugins>
