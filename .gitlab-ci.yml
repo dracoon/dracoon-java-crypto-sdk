@@ -65,7 +65,7 @@ unit test:
   extends: .job-template
   stage: test
   needs:
-    - build
+    - job: build
   script:
     - mvn test
     - mvn jacoco:report
@@ -83,7 +83,7 @@ integration test:
   extends: .job-template
   stage: test
   needs:
-    - build
+    - job: build
   script:
     - mvn verify
     - mvn jacoco:report-integration
@@ -100,7 +100,7 @@ dependencies check:
   extends: .job-template
   stage: report
   needs:
-    - build
+    - job: build
   script:
     - mvn dependency-check:check
   artifacts:
@@ -111,10 +111,10 @@ sonar:
   extends: .job-template
   stage: analyze
   needs:
-    - build
-    - unit test
-    - integration test
-    - dependencies check
+    - job: build
+    - job: unit test
+    - job: integration test
+    - job: dependencies check
   script:
     - mvn -Dsonar.scm.revision=$CI_COMMIT_SHORT_SHA -Dsonar.branch.name=$CI_COMMIT_REF_NAME sonar:sonar
 
@@ -122,9 +122,9 @@ deploy development:
   extends: .job-template
   stage: deploy
   needs:
-    - build
-    - unit test
-    - integration test
+    - job: build
+    - job: sonar
+      artifacts: false
   except:
     - main
   script:
@@ -134,9 +134,9 @@ deploy release:
   extends: .job-template
   stage: deploy
   needs:
-    - build
-    - unit test
-    - integration test
+    - job: build
+    - job: sonar
+      artifacts: false
   only:
     - main
   script:
@@ -146,9 +146,9 @@ rollout:
   extends: .job-template
   stage: rollout
   needs:
-    - build
-    - unit test
-    - integration test
+    - job: build
+    - job: sonar
+      artifacts: false
   only:
     - main
   when: manual
