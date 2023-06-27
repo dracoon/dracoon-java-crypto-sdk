@@ -75,6 +75,7 @@
         <sonar.branch.name>unknown</sonar.branch.name> <!-- Overwritten by GitLab pipeline -->
         <sonar.sources>src/main/java/</sonar.sources>
         <sonar.tests>src/test/java/</sonar.tests>
+        <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.dependencyCheck.htmlReportPath>target/dependency-check-reports/dependency-check-report.html</sonar.dependencyCheck.htmlReportPath>
         <sonar.dependencyCheck.jsonReportPath>target/dependency-check-reports/dependency-check-report.json</sonar.dependencyCheck.jsonReportPath>
     </properties>
