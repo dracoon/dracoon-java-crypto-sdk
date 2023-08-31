@@ -1,3 +1,6 @@
+variables:
+  ALLOW_QUALITY_GATE_FAILURE: 'false'
+
 stages:
   - build
   - test
@@ -118,10 +121,10 @@ sonar:
   script:
     - mvn -Dsonar.scm.revision=$CI_COMMIT_SHA -Dsonar.branch.name=$CI_COMMIT_REF_NAME sonar:sonar
   rules:
-    - if: $CI_COMMIT_TAG || $CI_COMMIT_REF_NAME == "main" || $CI_COMMIT_REF_NAME == "develop"
+    - if: $ALLOW_QUALITY_GATE_FAILURE == 'true' || ($CI_COMMIT_TAG == null && $CI_COMMIT_REF_NAME != 'main' && $CI_COMMIT_REF_NAME != 'develop')
       when: on_success
-      allow_failure: false
-    - allow_failure: true
+      allow_failure: true
+    - allow_failure: false
 
 deploy development:
   extends: .job-template
