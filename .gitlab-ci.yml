@@ -30,8 +30,8 @@ cache:
     SONAR_DOMAIN:
       vault: Sonar/domain@Build-Environment
       file: false
-    SONAR_LOGIN:
-      vault: Sonar/access-key@Build-Environment
+    SONAR_TOKEN:
+      vault: Sonar/token@Build-Environment
       file: false
     SONATYPE_OSSRH_SIGN_KEY_NAME:
       vault: sonatype-ossrh-signing/name@Build-Environment
