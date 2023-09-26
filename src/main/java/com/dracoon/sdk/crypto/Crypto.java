@@ -71,7 +71,7 @@ public class Crypto {
         Security.insertProviderAt(new org.bouncycastle.jce.provider.BouncyCastleProvider(), 1);
     }
 
-    private static final int HASH_ITERATION_COUNT = 10000;
+    private static final int HASH_ITERATION_COUNT = 1300000;
     private static final int FILE_KEY_SIZE = 32;
     private static final int IV_SIZE = 12;
 
