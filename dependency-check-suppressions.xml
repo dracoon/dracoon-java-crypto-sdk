@@ -1,10 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-    <suppress>
-        <notes><![CDATA[
-        This suppresses a CVE which relates to a faulty LDAP certificate path validation. Because the faulty validation is not used and no newer version of the Bouncy Castle libraries is available, the CVE is suppressed.
-        ]]></notes>
-        <cpe regex="true">^pkg:maven/org.bouncycastle/*@.*$</cpe>
-        <cve>CVE-2023-33201</cve>
-    </suppress>
 </suppressions>

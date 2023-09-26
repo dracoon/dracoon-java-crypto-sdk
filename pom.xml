@@ -59,7 +59,7 @@
         <maven-nexus-staging-plugin.version>1.6.13</maven-nexus-staging-plugin.version>
 
         <!-- dependencies versions -->
-        <bouncycastle.version>1.70</bouncycastle.version>
+        <bouncycastle.version>1.76</bouncycastle.version>
 
         <!-- test dependencies versions -->
         <junit.version>4.13.2</junit.version>
@@ -84,12 +84,12 @@
     <dependencies>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
+            <artifactId>bcprov-jdk18on</artifactId>
             <version>${bouncycastle.version}</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
+            <artifactId>bcpkix-jdk18on</artifactId>
             <version>${bouncycastle.version}</version>
         </dependency>
 
