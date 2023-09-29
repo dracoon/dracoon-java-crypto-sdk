@@ -20,8 +20,8 @@ if [ -z "${SONAR_DOMAIN}" ]; then
     exit 4
 fi
 
-if [ -z "${SONAR_LOGIN}" ]; then
-    echo "Environment variable SONAR_LOGIN is not set. Aborting ..."
+if [ -z "${SONAR_TOKEN}" ]; then
+    echo "Environment variable SONAR_TOKEN is not set. Aborting ..."
     exit 5
 fi
 

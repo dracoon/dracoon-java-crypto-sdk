@@ -1,3 +1,6 @@
+variables:
+  ALLOW_QUALITY_GATE_FAILURE: 'false'
+
 stages:
   - build
   - test
@@ -27,8 +30,8 @@ cache:
     SONAR_DOMAIN:
       vault: Sonar/domain@Build-Environment
       file: false
-    SONAR_LOGIN:
-      vault: Sonar/access-key@Build-Environment
+    SONAR_TOKEN:
+      vault: Sonar/token@Build-Environment
       file: false
     SONATYPE_OSSRH_SIGN_KEY_NAME:
       vault: sonatype-ossrh-signing/name@Build-Environment
@@ -65,7 +68,7 @@ unit test:
   extends: .job-template
   stage: test
   needs:
-    - build
+    - job: build
   script:
     - mvn test
     - mvn jacoco:report
@@ -83,7 +86,7 @@ integration test:
   extends: .job-template
   stage: test
   needs:
-    - build
+    - job: build
   script:
     - mvn verify
     - mvn jacoco:report-integration
@@ -100,7 +103,7 @@ dependencies check:
   extends: .job-template
   stage: report
   needs:
-    - build
+    - job: build
   script:
     - mvn dependency-check:check
   artifacts:
@@ -111,22 +114,27 @@ sonar:
   extends: .job-template
   stage: analyze
   needs:
-    - build
-    - unit test
-    - integration test
-    - dependencies check
+    - job: build
+    - job: unit test
+    - job: integration test
+    - job: dependencies check
   script:
-    - mvn -Dsonar.scm.revision=$CI_COMMIT_SHORT_SHA -Dsonar.branch.name=$CI_COMMIT_REF_NAME sonar:sonar
+    - mvn -Dsonar.scm.revision=$CI_COMMIT_SHA -Dsonar.branch.name=$CI_COMMIT_REF_NAME sonar:sonar
+  rules:
+    - if: $ALLOW_QUALITY_GATE_FAILURE == 'true' || ($CI_COMMIT_TAG == null && $CI_COMMIT_REF_NAME != 'main' && $CI_COMMIT_REF_NAME != 'develop')
+      when: on_success
+      allow_failure: true
+    - allow_failure: false
 
 deploy development:
   extends: .job-template
   stage: deploy
   needs:
-    - build
-    - unit test
-    - integration test
+    - job: build
+    - job: sonar
+      artifacts: false
   except:
-    - master
+    - tags
   script:
     - mvn -Pdevelopment deploy -DskipTests
 
@@ -134,11 +142,11 @@ deploy release:
   extends: .job-template
   stage: deploy
   needs:
-    - build
-    - unit test
-    - integration test
+    - job: build
+    - job: sonar
+      artifacts: false
   only:
-    - master
+    - tags
   script:
     - mvn -Prelease deploy -DskipTests
 
@@ -146,11 +154,11 @@ rollout:
   extends: .job-template
   stage: rollout
   needs:
-    - build
-    - unit test
-    - integration test
+    - job: build
+    - job: sonar
+      artifacts: false
   only:
-    - master
+    - tags
   when: manual
   script:
     - mvn -Prollout deploy -DskipTests -Dgpg.keyname=$SONATYPE_OSSRH_SIGN_KEY_NAME -Dgpg.passphrase=$SONATYPE_OSSRH_SIGN_KEY_PASSPHRASE
