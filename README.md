@@ -23,13 +23,13 @@ Maven: Add this dependency to your pom.xml:
 <dependency>
     <groupId>com.dracoon</groupId>
     <artifactId>dracoon-crypto-sdk</artifactId>
-    <version>2.0.3</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 
 Gradle: Add this dependency to your build.gradle:
 ```groovy
-compile 'com.dracoon:dracoon-crypto-sdk:2.0.3'
+compile 'com.dracoon:dracoon-crypto-sdk:2.1.0'
 ```
 
 JAR import: The latest JAR can be found [here](
