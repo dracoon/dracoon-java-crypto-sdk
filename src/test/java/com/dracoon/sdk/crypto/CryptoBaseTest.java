@@ -42,7 +42,7 @@ public abstract class CryptoBaseTest {
                 "-----BEGIN PUBLIC KEY-----"));
     }
 
-    protected UserKeyPair testGenerateUserKeyPair(String version, String password)
+    protected UserKeyPair generateUserKeyPair(String version, String password)
             throws UnknownVersionException, InvalidKeyPairException, InvalidPasswordException,
             CryptoSystemException {
         UserKeyPair.Version kpv = null;
@@ -78,7 +78,7 @@ public abstract class CryptoBaseTest {
         assertEquals("Version is incorrect!", efk.getVersion(), testEfk.getVersion());
     }
 
-    protected EncryptedFileKey testEncryptFileKey(String pfkFileName, String upkFileName)
+    protected EncryptedFileKey encryptFileKey(String pfkFileName, String upkFileName)
             throws UnknownVersionException, InvalidFileKeyException, InvalidKeyPairException,
             CryptoSystemException {
         PlainFileKey pfk = readPlainFileKey(pfkFileName);
@@ -95,7 +95,7 @@ public abstract class CryptoBaseTest {
         assertEquals("Version is incorrect!", pfk.getVersion(), testPfk.getVersion());
     }
 
-    protected PlainFileKey testDecryptFileKey(String efkFileName, String upkFileName, String pw)
+    protected PlainFileKey decryptFileKey(String efkFileName, String upkFileName, String pw)
             throws UnknownVersionException, InvalidFileKeyException, InvalidKeyPairException,
             InvalidPasswordException, CryptoSystemException {
         EncryptedFileKey efk = readEncryptedFileKey(efkFileName);
@@ -110,7 +110,7 @@ public abstract class CryptoBaseTest {
         assertEquals("File key version is invalid!", version, testPfk.getVersion().getValue());
     }
 
-    protected PlainFileKey testGenerateFileKey(String version) throws UnknownVersionException {
+    protected PlainFileKey generateFileKey(String version) throws UnknownVersionException {
         PlainFileKey.Version pfkv = null;
         if (version != null) {
             pfkv = PlainFileKey.Version.getByValue(version);

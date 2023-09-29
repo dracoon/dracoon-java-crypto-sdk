@@ -43,6 +43,16 @@ public abstract class CryptoTest extends CryptoBaseTest {
                 true);
     }
 
+    @Test
+    public void testCheckUserKeyPair_Rsa4096_KdfV2_Success() throws UnknownVersionException,
+            InvalidKeyPairException, CryptoSystemException {
+        testCheckUserKeyPair(
+                data("kp_rsa4096_kdfv2/private_key.json"),
+                data("kp_rsa4096_kdfv2/public_key.json"),
+                password(UserKeyPair.Version.RSA4096),
+                true);
+    }
+
     // ### FILE KEY ENCRYPTION TESTS ###
 
     @Test
@@ -50,7 +60,7 @@ public abstract class CryptoTest extends CryptoBaseTest {
             InvalidFileKeyException, InvalidKeyPairException, CryptoSystemException {
         EncryptedFileKey efk = readEncryptedFileKey(data("fk_rsa2048_aes256gcm/enc_file_key.json"));
 
-        EncryptedFileKey testEfk = testEncryptFileKey(
+        EncryptedFileKey testEfk = encryptFileKey(
                 data("fk_rsa2048_aes256gcm/plain_file_key.json"),
                 data("kp_rsa2048/public_key.json"));
 
@@ -62,7 +72,7 @@ public abstract class CryptoTest extends CryptoBaseTest {
             InvalidFileKeyException, InvalidKeyPairException, CryptoSystemException {
         EncryptedFileKey efk = readEncryptedFileKey(data("fk_rsa4096_aes256gcm/enc_file_key.json"));
 
-        EncryptedFileKey testEfk = testEncryptFileKey(
+        EncryptedFileKey testEfk = encryptFileKey(
                 data("fk_rsa4096_aes256gcm/plain_file_key.json"),
                 data("kp_rsa4096/public_key.json"));
 
@@ -77,7 +87,7 @@ public abstract class CryptoTest extends CryptoBaseTest {
             CryptoSystemException {
         PlainFileKey pfk = readPlainFileKey(data("fk_rsa2048_aes256gcm/plain_file_key.json"));
 
-        PlainFileKey testPfk = testDecryptFileKey(
+        PlainFileKey testPfk = decryptFileKey(
                 data("fk_rsa2048_aes256gcm/enc_file_key.json"),
                 data("kp_rsa2048/private_key.json"),
                 password(UserKeyPair.Version.RSA2048));
@@ -91,7 +101,7 @@ public abstract class CryptoTest extends CryptoBaseTest {
             CryptoSystemException {
         PlainFileKey pfk = readPlainFileKey(data("fk_rsa4096_aes256gcm/plain_file_key.json"));
 
-        PlainFileKey testPfk = testDecryptFileKey(
+        PlainFileKey testPfk = decryptFileKey(
                 data("fk_rsa4096_aes256gcm/enc_file_key.json"),
                 data("kp_rsa4096/private_key.json"),
                 password(UserKeyPair.Version.RSA4096));
