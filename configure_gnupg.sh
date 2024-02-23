@@ -15,6 +15,8 @@ if [ -z "${SONATYPE_OSSRH_SIGN_KEY_PASSPHRASE}" ]; then
     exit 3
 fi
 
+apt update && apt install -y gpg
+
 mkdir -p ~/.gnupg
 
 echo $SONATYPE_OSSRH_SIGN_SECRING | base64 --decode --ignore-garbage > ~/.gnupg/ossrh_secring.gpg
