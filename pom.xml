@@ -46,16 +46,16 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- plugin versions -->
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
-        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
-        <maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
-        <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>3.0.0</maven-failsafe-plugin.version>
-        <maven-jacoco-plugin.version>0.8.8</maven-jacoco-plugin.version>
-        <maven-dependency-check-plugin.version>7.4.4</maven-dependency-check-plugin.version>
-        <maven-sonar-plugin.version>3.9.1.2184</maven-sonar-plugin.version>
-        <maven-deploy-plugin.version>3.1.0</maven-deploy-plugin.version>
-        <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
+        <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+        <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
+        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.2.5</maven-failsafe-plugin.version>
+        <maven-jacoco-plugin.version>0.8.11</maven-jacoco-plugin.version>
+        <maven-dependency-check-plugin.version>9.0.9</maven-dependency-check-plugin.version>
+        <maven-sonar-plugin.version>3.10.0.2594</maven-sonar-plugin.version>
+        <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
+        <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
         <maven-nexus-staging-plugin.version>1.6.13</maven-nexus-staging-plugin.version>
 
         <!-- dependencies versions -->
