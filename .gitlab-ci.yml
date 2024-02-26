@@ -63,7 +63,6 @@ image:
     paths:
       - .m2/repository
   before_script:
-    - ./configure_gnupg.sh
     - ./configure_maven.sh
 
 build:
@@ -177,4 +176,5 @@ rollout:
     - tags
   when: manual
   script:
+    - ./configure_gnupg.sh
     - mvn -Prollout deploy -DskipTests -Dgpg.keyname=$SONATYPE_OSSRH_SIGN_KEY_NAME -Dgpg.passphrase=$SONATYPE_OSSRH_SIGN_KEY_PASSPHRASE
