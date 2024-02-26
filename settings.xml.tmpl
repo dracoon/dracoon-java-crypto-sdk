@@ -78,6 +78,15 @@
             </pluginRepositories>
         </profile>
         <profile>
+            <id>dracoon-dependency-check</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <dependencyCheck.nistNvdApiKey>${env.DEPENDENCY_CHECK_NIST_NVD_API_KEY}</dependencyCheck.nistNvdApiKey>
+            </properties>
+        </profile>
+        <profile>
             <id>dracoon-sonar</id>
             <activation>
                 <activeByDefault>true</activeByDefault>

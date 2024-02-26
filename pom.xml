@@ -258,13 +258,11 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.sonarsource.scanner.maven</groupId>
-                <artifactId>sonar-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
                 <configuration>
+                    <nvdApiKey>${dependencyCheck.nistNvdApiKey}</nvdApiKey>
+                    <dataDirectory>target/dependency-check-data</dataDirectory>
                     <outputDirectory>target/dependency-check-reports</outputDirectory>
                     <formats>
                         <format>HTML</format>
@@ -273,6 +271,10 @@
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                     <suppressionFile>dependency-check-suppressions.xml</suppressionFile>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
