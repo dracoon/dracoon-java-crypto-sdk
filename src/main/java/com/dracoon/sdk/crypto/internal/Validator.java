@@ -21,6 +21,13 @@ public class Validator {
         }
     }
 
+    public static void validateCharArray(String name, char[] chars) {
+        validateNotNull(name, chars);
+        if (chars.length == 0) {
+            throw new IllegalArgumentException(String.format("'%s' cannot be empty.", name));
+        }
+    }
+
     public static <T> void validateEqual(String name1, T value1, String name2, T value2) {
         if (!Objects.equals(value1, value2)) {
             throw new IllegalArgumentException(String.format("'%s' and '%s' must be equal.", name1,

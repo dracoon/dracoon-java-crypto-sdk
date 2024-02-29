@@ -57,11 +57,11 @@ import org.bouncycastle.util.io.pem.PemGenerationException;
  * This class is the main class of the Dracoon Crypto Library.<br>
  * <br>
  * The class provides methods for:<br>
- * - User key pair generation: {@link #generateUserKeyPair(UserKeyPair.Version, String) generateUserKeyPair}<br>
- * - User key pair check: {@link #checkUserKeyPair(UserKeyPair, String) checkUserKeyPair}<br>
+ * - User key pair generation: {@link #generateUserKeyPair(UserKeyPair.Version, char[]) generateUserKeyPair}<br>
+ * - User key pair check: {@link #checkUserKeyPair(UserKeyPair, char[]) checkUserKeyPair}<br>
  * - File key generation: {@link #generateFileKey(PlainFileKey.Version) generateFileKey}<br>
  * - File key encryption: {@link #encryptFileKey(PlainFileKey, UserPublicKey) encryptFileKey}<br>
- * - File key decryption: {@link #decryptFileKey(EncryptedFileKey, UserPrivateKey, String) decryptFileKey}<br>
+ * - File key decryption: {@link #decryptFileKey(EncryptedFileKey, UserPrivateKey, char[]) decryptFileKey}<br>
  * - Cipher creation for file encryption: {@link #createFileEncryptionCipher(PlainFileKey) createFileEncryptionCipher}<br>
  * - Cipher creation for file decryption: {@link #createFileDecryptionCipher(PlainFileKey) createFileDecryptionCipher}<br>
  */
@@ -120,12 +120,12 @@ public class Crypto {
      * @throws InvalidPasswordException If the password to secure the private key is invalid.
      * @throws CryptoSystemException    If a unknown error occurred.
      */
-    public static UserKeyPair generateUserKeyPair(UserKeyPair.Version version, String password)
+    public static UserKeyPair generateUserKeyPair(UserKeyPair.Version version, char[] password)
             throws IllegalArgumentException, InvalidKeyPairException, InvalidPasswordException,
             CryptoSystemException {
         // SONAR: Constants for the parameter names would be overkill
         Validator.validateNotNull("version", version); //NOSONAR
-        Validator.validateString("password", password); //NOSONAR
+        Validator.validateCharArray("password", password); //NOSONAR
 
         KeyPair keyPair = generateKeyPair(version);
 
@@ -163,14 +163,14 @@ public class Crypto {
         }
     }
 
-    private static String encryptPrivateKey(PrivateKey privateKey, String password)
+    private static String encryptPrivateKey(PrivateKey privateKey, char[] password)
             throws InvalidPasswordException, CryptoSystemException {
         OutputEncryptor encryptor;
         try {
             encryptor = new JceOpenSSLPKCS8EncryptorBuilder(PKCS8Generator.AES_256_CBC)
                     .setProvider("BC")
                     .setIterationCount(HASH_ITERATION_COUNT)
-                    .setPassword(password.toCharArray())
+                    .setPassword(password)
                     .build();
         } catch (OperatorCreationException e) {
             throw new CryptoSystemException("Could not encrypt private key. Creation of PKCS8" +
@@ -197,7 +197,7 @@ public class Crypto {
         }
     }
 
-    private static PrivateKey decryptPrivateKey(String privateKey, String password)
+    private static PrivateKey decryptPrivateKey(String privateKey, char[] password)
             throws InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
         Object obj;
         try {
@@ -217,7 +217,7 @@ public class Crypto {
                 PKCS8EncryptedPrivateKeyInfo epkInfo = (PKCS8EncryptedPrivateKeyInfo) obj;
                 InputDecryptorProvider decryptor = new JceOpenSSLPKCS8DecryptorProviderBuilder()
                         .setProvider("BC")
-                        .build(password.toCharArray());
+                        .build(password);
                 pkInfo = epkInfo.decryptPrivateKeyInfo(decryptor);
             } else {
                 throw new InvalidKeyPairException("Could not decrypt private key. Provided key " +
@@ -300,13 +300,13 @@ public class Crypto {
      * @throws InvalidKeyPairException If the user key pair is invalid.
      * @throws CryptoSystemException   If a unknown error occurred.
      */
-    public static boolean checkUserKeyPair(UserKeyPair userKeyPair, String password)
+    public static boolean checkUserKeyPair(UserKeyPair userKeyPair, char[] password)
             throws InvalidKeyPairException, CryptoSystemException {
         // SONAR: Constants for the parameter names would be overkill
         Validator.validateNotNull("userKeyPair", userKeyPair); //NOSONAR
-        Validator.validateString("password", password); //NOSONAR
+        Validator.validateCharArray("password", password); //NOSONAR
 
-        if (password == null || password.isEmpty()) {
+        if (password == null || password.length == 0) {
             return false;
         }
 
@@ -389,12 +389,12 @@ public class Crypto {
      * @throws CryptoSystemException    If a unknown error occurred.
      */
     public static PlainFileKey decryptFileKey(EncryptedFileKey encFileKey,
-            UserPrivateKey userPrivateKey, String password) throws InvalidFileKeyException,
+            UserPrivateKey userPrivateKey, char[] password) throws InvalidFileKeyException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
         // SONAR: Constants for the parameter names would be overkill
         Validator.validateNotNull("encFileKey", encFileKey); //NOSONAR
         Validator.validateNotNull("userPrivateKey", userPrivateKey); //NOSONAR
-        Validator.validateString("password", password); //NOSONAR
+        Validator.validateCharArray("password", password); //NOSONAR
 
         PlainFileKey.Version plainFileKeyVersion = getPlainFileKeyVersion(
                 userPrivateKey.getVersion(), encFileKey.getVersion());

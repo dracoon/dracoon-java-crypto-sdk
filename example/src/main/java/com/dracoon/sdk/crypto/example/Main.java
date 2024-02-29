@@ -22,7 +22,7 @@ import com.dracoon.sdk.crypto.model.UserKeyPair;
  */
 public class Main {
 
-    private static final String USER_PASSWORD = "Pass1234!";
+    private static final char[] USER_PASSWORD = {'P','a','s','s','1','2','3','4','!'};
 
     private static final String DATA =
             "TestABCDEFGH 123\n" +

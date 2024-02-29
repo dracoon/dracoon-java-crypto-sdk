@@ -42,14 +42,14 @@ public abstract class CryptoBaseTest {
                 "-----BEGIN PUBLIC KEY-----"));
     }
 
-    protected UserKeyPair generateUserKeyPair(String version, String password)
+    protected UserKeyPair generateUserKeyPair(String version, String pw)
             throws UnknownVersionException, InvalidKeyPairException, InvalidPasswordException,
             CryptoSystemException {
         UserKeyPair.Version kpv = null;
         if (version != null) {
             kpv = UserKeyPair.Version.getByValue(version);
         }
-        return Crypto.generateUserKeyPair(kpv, password);
+        return Crypto.generateUserKeyPair(kpv, toCharArray(pw));
     }
 
     // ### KEY PAIR CHECK TESTS ###
@@ -60,7 +60,7 @@ public abstract class CryptoBaseTest {
         UserPrivateKey uprk = readUserPrivateKey(uprkFileName);
         UserPublicKey upuk = readUserPublicKey(upukFileName);
         UserKeyPair ukp = new UserKeyPair(uprk, upuk);
-        boolean testCheck = Crypto.checkUserKeyPair(ukp, pw);
+        boolean testCheck = Crypto.checkUserKeyPair(ukp, toCharArray(pw));
 
         if (Objects.equals(mustBeOk, Boolean.TRUE)) {
             assertTrue("User key pair check failed!", testCheck);
@@ -100,7 +100,7 @@ public abstract class CryptoBaseTest {
             InvalidPasswordException, CryptoSystemException {
         EncryptedFileKey efk = readEncryptedFileKey(efkFileName);
         UserPrivateKey upk = readUserPrivateKey(upkFileName);
-        return Crypto.decryptFileKey(efk, upk, pw);
+        return Crypto.decryptFileKey(efk, upk, toCharArray(pw));
     }
 
     // ### FILE KEY CREATION TESTS ###
@@ -140,7 +140,11 @@ public abstract class CryptoBaseTest {
 
     // ### HELPER METHODS ###
 
-    protected static UserPrivateKey readUserPrivateKey(String fileName)
+    private static char[] toCharArray(String s) {
+        return s != null ? s.toCharArray() : null;
+    }
+
+    private static UserPrivateKey readUserPrivateKey(String fileName)
             throws UnknownVersionException {
         if (fileName == null) {
             return null;
@@ -150,7 +154,7 @@ public abstract class CryptoBaseTest {
         return new UserPrivateKey(v, uk.privateKey);
     }
 
-    protected static UserPublicKey readUserPublicKey(String fileName)
+    private static UserPublicKey readUserPublicKey(String fileName)
             throws UnknownVersionException {
         if (fileName == null) {
             return null;
