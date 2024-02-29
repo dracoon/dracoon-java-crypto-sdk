@@ -25,20 +25,24 @@ public abstract class CryptoBaseTest {
     protected void validateKeyPair(UserKeyPair testUkp, String version) {
         assertNotNull("Key pair is null!", testUkp);
 
-        UserPrivateKey testPrik = testUkp.getUserPrivateKey();
-        assertNotNull("Private key container is null!", testPrik);
-        assertNotNull("Private key version is null!", testPrik.getVersion());
-        assertEquals("Private key version is invalid!", version, testPrik.getVersion().getValue());
-        assertNotNull("Private key is null!", testPrik.getPrivateKey());
-        assertTrue("Private key is invalid!", testPrik.getPrivateKey().startsWith(
+        UserPrivateKey testPriKey = testUkp.getUserPrivateKey();
+        assertNotNull("Private key container is null!", testPriKey);
+        UserKeyPair.Version testPriKeyVer = testPriKey.getVersion();
+        assertNotNull("Private key version is null!", testPriKeyVer);
+        assertEquals("Private key version is invalid!", version, testPriKeyVer.getValue());
+        char[] testPriKeyKey = testPriKey.getPrivateKey();
+        assertNotNull("Private key is null!", testPriKeyKey);
+        assertTrue("Private key is invalid!", toString(testPriKeyKey).startsWith(
                 "-----BEGIN ENCRYPTED PRIVATE KEY-----"));
 
-        UserPublicKey testPubk = testUkp.getUserPublicKey();
-        assertNotNull("Public key container is null!", testPubk);
-        assertNotNull("Public key version is null!", testPubk.getVersion());
-        assertEquals("Public key version is invalid!", version, testPubk.getVersion().getValue());
-        assertNotNull("Public key is null!", testPubk.getPublicKey());
-        assertTrue("Public key is invalid!", testPubk.getPublicKey().startsWith(
+        UserPublicKey testPubKey = testUkp.getUserPublicKey();
+        assertNotNull("Public key container is null!", testPubKey);
+        UserKeyPair.Version testPubKeyVer = testPubKey.getVersion();
+        assertNotNull("Public key version is null!", testPubKeyVer);
+        assertEquals("Public key version is invalid!", version, testPubKeyVer.getValue());
+        char[] testPubKeyKey = testPubKey.getPublicKey();
+        assertNotNull("Public key is null!", testPubKeyKey);
+        assertTrue("Public key is invalid!", toString(testPubKeyKey).startsWith(
                 "-----BEGIN PUBLIC KEY-----"));
     }
 
@@ -144,6 +148,10 @@ public abstract class CryptoBaseTest {
         return s != null ? s.toCharArray() : null;
     }
 
+    private static String toString(char[] cs) {
+        return cs != null ? String.valueOf(cs) : null;
+    }
+
     private static UserPrivateKey readUserPrivateKey(String fileName)
             throws UnknownVersionException {
         if (fileName == null) {
@@ -151,7 +159,7 @@ public abstract class CryptoBaseTest {
         }
         TestUserPrivateKey uk = TestUtils.readData(TestUserPrivateKey.class, fileName);
         UserKeyPair.Version v = UserKeyPair.Version.getByValue(uk.version);
-        return new UserPrivateKey(v, uk.privateKey);
+        return new UserPrivateKey(v, toCharArray(uk.privateKey));
     }
 
     private static UserPublicKey readUserPublicKey(String fileName)
@@ -161,7 +169,7 @@ public abstract class CryptoBaseTest {
         }
         TestUserPublicKey uk = TestUtils.readData(TestUserPublicKey.class, fileName);
         UserKeyPair.Version v = UserKeyPair.Version.getByValue(uk.version);
-        return new UserPublicKey(v, uk.publicKey);
+        return new UserPublicKey(v, toCharArray(uk.publicKey));
     }
 
     protected static EncryptedFileKey readEncryptedFileKey(String fileName)

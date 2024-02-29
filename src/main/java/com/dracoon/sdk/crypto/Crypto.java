@@ -1,9 +1,8 @@
 package com.dracoon.sdk.crypto;
 
-import java.io.ByteArrayInputStream;
+import java.io.CharArrayReader;
+import java.io.CharArrayWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -129,12 +128,11 @@ public class Crypto {
 
         KeyPair keyPair = generateKeyPair(version);
 
-        String privateKeyString = encryptPrivateKey(keyPair.getPrivate(), password);
-        String publicKeyString = getStringFromPublicKey(keyPair.getPublic());
+        char[] privateKey = encryptEncodePrivateKey(keyPair.getPrivate(), password);
+        char[] publicKey = encodePublicKey(keyPair.getPublic());
 
-        UserPrivateKey userPrivateKey = new UserPrivateKey(version, privateKeyString);
-
-        UserPublicKey userPublicKey = new UserPublicKey(version, publicKeyString);
+        UserPrivateKey userPrivateKey = new UserPrivateKey(version, privateKey);
+        UserPublicKey userPublicKey = new UserPublicKey(version, publicKey);
 
         return new UserKeyPair(userPrivateKey, userPublicKey);
     }
@@ -163,7 +161,7 @@ public class Crypto {
         }
     }
 
-    private static String encryptPrivateKey(PrivateKey privateKey, char[] password)
+    private static char[] encryptEncodePrivateKey(PrivateKey key, char[] password)
             throws InvalidPasswordException, CryptoSystemException {
         OutputEncryptor encryptor;
         try {
@@ -179,33 +177,32 @@ public class Crypto {
 
         PKCS8Generator generator;
         try {
-            generator = new JcaPKCS8Generator(privateKey, encryptor);
+            generator = new JcaPKCS8Generator(key, encryptor);
         } catch (PemGenerationException e) {
             throw new InvalidPasswordException("Could not encrypt private key. Invalid private " +
                     "key password.", e);
         }
 
         try {
-            StringWriter stringWriter = new StringWriter();
-            JcaPEMWriter pemWriter = new JcaPEMWriter(stringWriter);
+            CharArrayWriter charWriter = new CharArrayWriter();
+            JcaPEMWriter pemWriter = new JcaPEMWriter(charWriter);
             pemWriter.writeObject(generator);
             pemWriter.close();
-            return stringWriter.toString();
+            return charWriter.toCharArray();
         } catch (IOException e) {
             throw new CryptoSystemException("Could not encrypt private key. PEM encoding failed.",
                     e);
         }
     }
 
-    private static PrivateKey decryptPrivateKey(String privateKey, char[] password)
+    private static PrivateKey decryptDecodePrivateKey(char[] key, char[] password)
             throws InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
         Object obj;
         try {
-            ByteArrayInputStream in = new ByteArrayInputStream(privateKey.getBytes());
-            PEMParser pemReader = new PEMParser(new InputStreamReader(in));
+            CharArrayReader charReader = new CharArrayReader(key);
+            PEMParser pemReader = new PEMParser(charReader);
             obj = pemReader.readObject();
             pemReader.close();
-            in.close();
         } catch (Exception e) {
             throw new InvalidKeyPairException("Could not decrypt private key. PEM decoding failed.",
                     e);
@@ -243,27 +240,26 @@ public class Crypto {
         }
     }
 
-    private static String getStringFromPublicKey(PublicKey pubKey) throws InvalidKeyPairException {
+    private static char[] encodePublicKey(PublicKey key) throws InvalidKeyPairException {
         try {
-            StringWriter writer = new StringWriter();
-            JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
-            pemWriter.writeObject(pubKey);
+            CharArrayWriter charWriter = new CharArrayWriter();
+            JcaPEMWriter pemWriter = new JcaPEMWriter(charWriter);
+            pemWriter.writeObject(key);
             pemWriter.close();
-            return writer.toString();
+            return charWriter.toCharArray();
         } catch (IOException e) {
             throw new InvalidKeyPairException("Could not encode public key. PEM encoding failed.",
                     e);
         }
     }
 
-    private static PublicKey getPublicKeyFromString(String pubKey) throws InvalidKeyPairException {
+    private static PublicKey decodePublicKey(char[] key) throws InvalidKeyPairException {
         Object obj;
         try {
-            ByteArrayInputStream in = new ByteArrayInputStream(pubKey.getBytes());
-            PEMParser pemReader = new PEMParser(new InputStreamReader(in));
+            CharArrayReader charReader = new CharArrayReader(key);
+            PEMParser pemReader = new PEMParser(charReader);
             obj = pemReader.readObject();
             pemReader.close();
-            in.close();
         } catch (Exception e) {
             throw new InvalidKeyPairException("Could not decode public key. PEM decoding failed.",
                     e);
@@ -311,7 +307,7 @@ public class Crypto {
         }
 
         try {
-            decryptPrivateKey(userKeyPair.getUserPrivateKey().getPrivateKey(), password);
+            decryptDecodePrivateKey(userKeyPair.getUserPrivateKey().getPrivateKey(), password);
             return true;
         } catch(InvalidPasswordException e) {
             return false;
@@ -343,7 +339,7 @@ public class Crypto {
         EncryptedFileKey.Version encFileKeyVersion = getEncryptedFileKeyVersion(
                 userPublicKey.getVersion(), plainFileKey.getVersion());
 
-        PublicKey publicKey = getPublicKeyFromString(userPublicKey.getPublicKey());
+        PublicKey publicKey = decodePublicKey(userPublicKey.getPublicKey());
 
         Cipher cipher;
         try {
@@ -399,7 +395,7 @@ public class Crypto {
         PlainFileKey.Version plainFileKeyVersion = getPlainFileKeyVersion(
                 userPrivateKey.getVersion(), encFileKey.getVersion());
 
-        PrivateKey privateKey = decryptPrivateKey(userPrivateKey.getPrivateKey(), password);
+        PrivateKey privateKey = decryptDecodePrivateKey(userPrivateKey.getPrivateKey(), password);
 
         Cipher cipher;
         try {
