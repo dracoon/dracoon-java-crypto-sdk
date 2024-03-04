@@ -50,24 +50,24 @@ public class PlainFileKey {
     }
 
     private final Version version;
-    private final String key;
-    private final String iv;
+    private final byte[] key;
+    private final byte[] iv;
 
-    private String tag;
+    private byte[] tag;
 
     /**
      * Constructs a new plain file key.
      *
      * @param version The file key version.
-     * @param key     The plain Base64 encoded file key.
+     * @param key     The plain file key.
      * @param iv      The encryption initialization vector.
      *
      * @throws IllegalArgumentException If a parameter is invalid (e.g. null or empty).
      */
-    public PlainFileKey(Version version, String key, String iv) throws IllegalArgumentException {
+    public PlainFileKey(Version version, byte[] key, byte[] iv) throws IllegalArgumentException {
         Validator.validateNotNull("version", version);
-        Validator.validateString("key", key);
-        Validator.validateString("iv", iv);
+        Validator.validateByteArray("key", key);
+        Validator.validateByteArray("iv", iv);
         this.version = version;
         this.key = key;
         this.iv = iv;
@@ -83,11 +83,11 @@ public class PlainFileKey {
     }
 
     /**
-     * Returns the plain Base64 encoded file key.
+     * Returns the plain file key.
      *
      * @return the file key
      */
-    public String getKey() {
+    public byte[] getKey() {
         return key;
     }
 
@@ -96,7 +96,7 @@ public class PlainFileKey {
      *
      * @return the initialization vector
      */
-    public String getIv() {
+    public byte[] getIv() {
         return iv;
     }
 
@@ -105,7 +105,7 @@ public class PlainFileKey {
      *
      * @return the tag
      */
-    public String getTag() {
+    public byte[] getTag() {
         return tag;
     }
 
@@ -114,7 +114,7 @@ public class PlainFileKey {
      *
      * @param tag The encryption tag.
      */
-    public void setTag(String tag) {
+    public void setTag(byte[] tag) {
         this.tag = tag;
     }
 

@@ -353,7 +353,7 @@ public class Crypto {
             throw new InvalidKeyPairException("Could not encrypt file key. Invalid public key.", e);
         }
 
-        byte[] pFileKey = CryptoUtils.stringToByteArray(plainFileKey.getKey());
+        byte[] pFileKey = plainFileKey.getKey();
         byte[] eFileKey;
         try {
             eFileKey = cipher.doFinal(pFileKey);
@@ -361,8 +361,8 @@ public class Crypto {
             throw new CryptoSystemException("Could not encrypt file key. Encryption failed.", e);
         }
 
-        EncryptedFileKey encFileKey = new EncryptedFileKey(encFileKeyVersion, CryptoUtils
-                .byteArrayToString(eFileKey), plainFileKey.getIv());
+        EncryptedFileKey encFileKey = new EncryptedFileKey(encFileKeyVersion, eFileKey,
+                plainFileKey.getIv());
 
         encFileKey.setTag(plainFileKey.getTag());
 
@@ -409,7 +409,7 @@ public class Crypto {
             throw new InvalidKeyPairException("Could not decrypt file key. Invalid private key.", e);
         }
 
-        byte[] eFileKey = CryptoUtils.stringToByteArray(encFileKey.getKey());
+        byte[] eFileKey = encFileKey.getKey();
         byte[] dFileKey;
         try {
             dFileKey = cipher.doFinal(eFileKey);
@@ -417,8 +417,8 @@ public class Crypto {
             throw new InvalidFileKeyException("Could not decrypt file key. Encryption failed.", e);
         }
 
-        PlainFileKey plainFileKey = new PlainFileKey(plainFileKeyVersion, CryptoUtils.
-                byteArrayToString(dFileKey), encFileKey.getIv());
+        PlainFileKey plainFileKey = new PlainFileKey(plainFileKeyVersion, dFileKey,
+                encFileKey.getIv());
 
         plainFileKey.setTag(encFileKey.getTag());
 
@@ -474,8 +474,7 @@ public class Crypto {
         byte[] key = generateSecureRandomByteArray(FILE_KEY_SIZE);
         byte[] iv = generateSecureRandomByteArray(IV_SIZE);
 
-        return new PlainFileKey(version, CryptoUtils.byteArrayToString(key), CryptoUtils
-                .byteArrayToString(iv));
+        return new PlainFileKey(version, key, iv);
     }
 
     private static byte[] generateSecureRandomByteArray(int size) {

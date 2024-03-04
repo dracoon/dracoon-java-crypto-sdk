@@ -9,9 +9,6 @@ import com.dracoon.sdk.crypto.error.InvalidPasswordException;
 import com.dracoon.sdk.crypto.error.UnknownVersionException;
 import com.dracoon.sdk.crypto.model.EncryptedFileKey;
 import com.dracoon.sdk.crypto.model.PlainFileKey;
-import com.dracoon.sdk.crypto.model.TestFileKey;
-import com.dracoon.sdk.crypto.model.TestUserPrivateKey;
-import com.dracoon.sdk.crypto.model.TestUserPublicKey;
 import com.dracoon.sdk.crypto.model.UserKeyPair;
 import com.dracoon.sdk.crypto.model.UserPrivateKey;
 import com.dracoon.sdk.crypto.model.UserPublicKey;
@@ -77,8 +74,8 @@ public abstract class CryptoBaseTest {
 
     protected void validateEncryptedFileKey(EncryptedFileKey efk, EncryptedFileKey testEfk) {
         assertNotNull("File key is null!", testEfk.getKey());
-        assertEquals("Initialization vector is incorrect!", efk.getIv(), testEfk.getIv());
-        assertEquals("Tag is incorrect!", efk.getTag(), testEfk.getTag());
+        assertArrayEquals("Initialization vector is incorrect!", efk.getIv(), testEfk.getIv());
+        assertArrayEquals("Tag is incorrect!", efk.getTag(), testEfk.getTag());
         assertEquals("Version is incorrect!", efk.getVersion(), testEfk.getVersion());
     }
 
@@ -93,9 +90,9 @@ public abstract class CryptoBaseTest {
     // ### FILE KEY DECRYPTION TESTS ###
 
     protected void validatePlainFileKey(PlainFileKey pfk, PlainFileKey testPfk) {
-        assertEquals("File key is incorrect!", pfk.getKey(), testPfk.getKey());
-        assertEquals("Initialization vector is incorrect!", pfk.getIv(), testPfk.getIv());
-        assertEquals("Tag is incorrect!", pfk.getTag(), testPfk.getTag());
+        assertArrayEquals("File key is incorrect!", pfk.getKey(), testPfk.getKey());
+        assertArrayEquals("Initialization vector is incorrect!", pfk.getIv(), testPfk.getIv());
+        assertArrayEquals("Tag is incorrect!", pfk.getTag(), testPfk.getTag());
         assertEquals("Version is incorrect!", pfk.getVersion(), testPfk.getVersion());
     }
 
@@ -145,55 +142,31 @@ public abstract class CryptoBaseTest {
     // ### HELPER METHODS ###
 
     private static char[] toCharArray(String s) {
-        return s != null ? s.toCharArray() : null;
+        return TestUtils.toCharArray(s);
     }
 
     private static String toString(char[] cs) {
-        return cs != null ? String.valueOf(cs) : null;
+        return TestUtils.toString(cs);
     }
 
     private static UserPrivateKey readUserPrivateKey(String fileName)
             throws UnknownVersionException {
-        if (fileName == null) {
-            return null;
-        }
-        TestUserPrivateKey uk = TestUtils.readData(TestUserPrivateKey.class, fileName);
-        UserKeyPair.Version v = UserKeyPair.Version.getByValue(uk.version);
-        return new UserPrivateKey(v, toCharArray(uk.privateKey));
+        return TestUtils.readUserPrivateKey(fileName);
     }
 
     private static UserPublicKey readUserPublicKey(String fileName)
             throws UnknownVersionException {
-        if (fileName == null) {
-            return null;
-        }
-        TestUserPublicKey uk = TestUtils.readData(TestUserPublicKey.class, fileName);
-        UserKeyPair.Version v = UserKeyPair.Version.getByValue(uk.version);
-        return new UserPublicKey(v, toCharArray(uk.publicKey));
+        return TestUtils.readUserPublicKey(fileName);
     }
 
     protected static EncryptedFileKey readEncryptedFileKey(String fileName)
             throws UnknownVersionException {
-        if (fileName == null) {
-            return null;
-        }
-        TestFileKey fk = TestUtils.readData(TestFileKey.class, fileName);
-        EncryptedFileKey.Version v = EncryptedFileKey.Version.getByValue(fk.version);
-        EncryptedFileKey efk = new EncryptedFileKey(v, fk.key, fk.iv);
-        efk.setTag(fk.tag);
-        return efk;
+        return TestUtils.readEncryptedFileKey(fileName);
     }
 
     protected static PlainFileKey readPlainFileKey(String fileName)
             throws UnknownVersionException {
-        if (fileName == null) {
-            return null;
-        }
-        TestFileKey fk = TestUtils.readData(TestFileKey.class, fileName);
-        PlainFileKey.Version v = PlainFileKey.Version.getByValue(fk.version);
-        PlainFileKey pfk = new PlainFileKey(v, fk.key, fk.iv);
-        pfk.setTag(fk.tag);
-        return pfk;
+        return TestUtils.readPlainFileKey(fileName);
     }
 
 }

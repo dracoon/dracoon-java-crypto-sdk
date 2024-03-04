@@ -14,16 +14,16 @@ public class Validator {
         }
     }
 
-    public static void validateString(String name, String string) {
-        validateNotNull(name, string);
-        if (string.isEmpty()) {
+    public static void validateCharArray(String name, char[] chars) {
+        validateNotNull(name, chars);
+        if (chars.length == 0) {
             throw new IllegalArgumentException(String.format("'%s' cannot be empty.", name));
         }
     }
 
-    public static void validateCharArray(String name, char[] chars) {
-        validateNotNull(name, chars);
-        if (chars.length == 0) {
+    public static void validateByteArray(String name, byte[] bytes) {
+        validateNotNull(name, bytes);
+        if (bytes.length == 0) {
             throw new IllegalArgumentException(String.format("'%s' cannot be empty.", name));
         }
     }

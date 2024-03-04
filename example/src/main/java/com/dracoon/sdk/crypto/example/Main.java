@@ -47,7 +47,7 @@ public class Main {
         System.out.println("Plain Data:");
         System.out.println(new String(plainData, "UTF8"));
         System.out.println("Plain Data: (BASE64)");
-        System.out.println(CryptoUtils.byteArrayToString(plainData));
+        System.out.println(CryptoUtils.byteArrayToBase64String(plainData));
 
         // --- ENCRYPTION ---
         // Generate plain file key
@@ -60,7 +60,7 @@ public class Main {
         EncryptedFileKey encFileKey = Crypto.encryptFileKey(fileKey, userKeyPair.getUserPublicKey());
 
         System.out.println("Encrypted Data: (Base64)");
-        System.out.println(CryptoUtils.byteArrayToString(encData));
+        System.out.println(CryptoUtils.byteArrayToBase64String(encData));
 
         // --- DECRYPTION ---
         // Decrypt file key
@@ -72,7 +72,7 @@ public class Main {
         System.out.println("Decrypted Data:");
         System.out.println(new String(decData, "UTF8"));
         System.out.println("Decrypted Data: (BASE64)");
-        System.out.println(CryptoUtils.byteArrayToString(plainData));
+        System.out.println(CryptoUtils.byteArrayToBase64String(plainData));
     }
 
     /**
@@ -111,8 +111,7 @@ public class Main {
             // Complete encryption
             eDataContainer = cipher.doFinal();
             os.write(eDataContainer.getContent());
-            String tag = CryptoUtils.byteArrayToString(eDataContainer.getTag());
-            fileKey.setTag(tag);
+            fileKey.setTag(eDataContainer.getTag());
 
             encData = os.toByteArray();
         } catch (IOException e) {
@@ -168,8 +167,7 @@ public class Main {
             }
 
             // Complete decryption
-            byte[] tag = CryptoUtils.stringToByteArray(fileKey.getTag());
-            pDataContainer = cipher.doFinal(new EncryptedDataContainer(null, tag));
+            pDataContainer = cipher.doFinal(new EncryptedDataContainer(null, fileKey.getTag()));
             os.write(pDataContainer.getContent());
 
             decData = os.toByteArray();
