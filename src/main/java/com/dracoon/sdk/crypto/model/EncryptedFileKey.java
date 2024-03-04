@@ -3,14 +3,13 @@ package com.dracoon.sdk.crypto.model;
 import com.dracoon.sdk.crypto.error.UnknownVersionException;
 import com.dracoon.sdk.crypto.internal.CryptoUtils;
 import com.dracoon.sdk.crypto.internal.CryptoVersion;
-import com.dracoon.sdk.crypto.internal.Validator;
 
 /**
  * Encrypted file key model.<br>
  * <br>
  * This model holds encrypted file key data.
  */
-public class EncryptedFileKey {
+public class EncryptedFileKey extends FileKey<EncryptedFileKey.Version> {
 
     /**
      * Available encrypted file key versions.
@@ -50,12 +49,6 @@ public class EncryptedFileKey {
 
     }
 
-    private final Version version;
-    private final byte[] key;
-    private final byte[] iv;
-
-    private byte[] tag;
-
     /**
      * Constructs a new plain file key.
      *
@@ -66,57 +59,7 @@ public class EncryptedFileKey {
      * @throws IllegalArgumentException If a parameter is invalid (e.g. null or empty).
      */
     public EncryptedFileKey(Version version, byte[] key, byte[] iv) throws IllegalArgumentException {
-        Validator.validateNotNull("version", version);
-        Validator.validateByteArray("key", key);
-        Validator.validateByteArray("iv", iv);
-        this.version = version;
-        this.key = key;
-        this.iv = iv;
-    }
-
-    /**
-     * Returns the encrypted file key version.
-     *
-     * @return the version
-     */
-    public Version getVersion() {
-        return version;
-    }
-
-    /**
-     * Returns the encrypted file key.
-     *
-     * @return the file key
-     */
-    public byte[] getKey() {
-        return key;
-    }
-
-    /**
-     * Returns the encryption initialization vector.
-     *
-     * @return the initialization vector
-     */
-    public byte[] getIv() {
-        return iv;
-    }
-
-    /**
-     * Returns the encryption tag.
-     *
-     * @return the tag
-     */
-    public byte[] getTag() {
-        return tag;
-    }
-
-    /**
-     * Set the encryption tag.
-     *
-     * @param tag The encryption tag.
-     */
-    public void setTag(byte[] tag) {
-        this.tag = tag;
+        super(version, key, iv);
     }
 
 }
