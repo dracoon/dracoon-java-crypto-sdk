@@ -3,14 +3,13 @@ package com.dracoon.sdk.crypto.model;
 import com.dracoon.sdk.crypto.error.UnknownVersionException;
 import com.dracoon.sdk.crypto.internal.CryptoUtils;
 import com.dracoon.sdk.crypto.internal.CryptoVersion;
-import com.dracoon.sdk.crypto.internal.Validator;
 
 /**
  * Plain file key model.<br>
  * <br>
  * This model holds plain file key data.
  */
-public class PlainFileKey {
+public class PlainFileKey extends FileKey<PlainFileKey.Version> {
 
     /**
      * Available plain file key versions.
@@ -49,73 +48,17 @@ public class PlainFileKey {
 
     }
 
-    private final Version version;
-    private final String key;
-    private final String iv;
-
-    private String tag;
-
     /**
      * Constructs a new plain file key.
      *
      * @param version The file key version.
-     * @param key     The plain Base64 encoded file key.
+     * @param key     The plain file key.
      * @param iv      The encryption initialization vector.
      *
      * @throws IllegalArgumentException If a parameter is invalid (e.g. null or empty).
      */
-    public PlainFileKey(Version version, String key, String iv) throws IllegalArgumentException {
-        Validator.validateNotNull("version", version);
-        Validator.validateString("key", key);
-        Validator.validateString("iv", iv);
-        this.version = version;
-        this.key = key;
-        this.iv = iv;
-    }
-
-    /**
-     * Returns the plain file key version.
-     *
-     * @return the version
-     */
-    public Version getVersion() {
-        return version;
-    }
-
-    /**
-     * Returns the plain Base64 encoded file key.
-     *
-     * @return the file key
-     */
-    public String getKey() {
-        return key;
-    }
-
-    /**
-     * Returns the encryption initialization vector.
-     *
-     * @return the initialization vector
-     */
-    public String getIv() {
-        return iv;
-    }
-
-    /**
-     * Returns the encryption tag.
-     *
-     * @return the tag
-     */
-    public String getTag() {
-        return tag;
-    }
-
-    /**
-     * Set the encryption tag.
-     *
-     * @param tag The encryption tag.
-     */
-    public void setTag(String tag) {
-        this.tag = tag;
+    public PlainFileKey(Version version, byte[] key, byte[] iv) throws IllegalArgumentException {
+        super(version, key, iv);
     }
 
 }

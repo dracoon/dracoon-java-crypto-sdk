@@ -4,13 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import com.dracoon.sdk.crypto.CryptoUtils;
 import com.dracoon.sdk.crypto.error.BadFileException;
 import com.dracoon.sdk.crypto.error.CryptoSystemException;
 import com.dracoon.sdk.crypto.model.PlainFileKey;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.AESFastEngine;
 import org.bouncycastle.crypto.modes.GCMBlockCipher;
+import org.bouncycastle.crypto.modes.GCMModeCipher;
 import org.bouncycastle.crypto.params.AEADParameters;
 import org.bouncycastle.crypto.params.KeyParameter;
 
@@ -19,13 +19,13 @@ public abstract class AesGcmFileCipher {
     protected static final int BLOCK_SIZE = 16;
     protected static final int TAG_SIZE = 16;
 
-    protected GCMBlockCipher realCipher;
+    protected GCMModeCipher realCipher;
 
     protected void init(boolean encryption, PlainFileKey fileKey) throws IllegalArgumentException {
-        byte[] key = CryptoUtils.stringToByteArray(fileKey.getKey());
-        byte[] iv = CryptoUtils.stringToByteArray(fileKey.getIv());
+        byte[] key = fileKey.getKey();
+        byte[] iv = fileKey.getIv();
         AEADParameters parameters = new AEADParameters(new KeyParameter(key), 8 * TAG_SIZE, iv);
-        realCipher = new GCMBlockCipher(new AESFastEngine());
+        realCipher = GCMBlockCipher.newInstance(new AESFastEngine());
         realCipher.init(encryption, parameters);
     }
 

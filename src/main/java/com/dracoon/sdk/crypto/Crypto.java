@@ -1,9 +1,8 @@
 package com.dracoon.sdk.crypto;
 
-import java.io.ByteArrayInputStream;
+import java.io.CharArrayReader;
+import java.io.CharArrayWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -57,11 +56,11 @@ import org.bouncycastle.util.io.pem.PemGenerationException;
  * This class is the main class of the Dracoon Crypto Library.<br>
  * <br>
  * The class provides methods for:<br>
- * - User key pair generation: {@link #generateUserKeyPair(UserKeyPair.Version, String) generateUserKeyPair}<br>
- * - User key pair check: {@link #checkUserKeyPair(UserKeyPair, String) checkUserKeyPair}<br>
+ * - User key pair generation: {@link #generateUserKeyPair(UserKeyPair.Version, char[]) generateUserKeyPair}<br>
+ * - User key pair check: {@link #checkUserKeyPair(UserKeyPair, char[]) checkUserKeyPair}<br>
  * - File key generation: {@link #generateFileKey(PlainFileKey.Version) generateFileKey}<br>
  * - File key encryption: {@link #encryptFileKey(PlainFileKey, UserPublicKey) encryptFileKey}<br>
- * - File key decryption: {@link #decryptFileKey(EncryptedFileKey, UserPrivateKey, String) decryptFileKey}<br>
+ * - File key decryption: {@link #decryptFileKey(EncryptedFileKey, UserPrivateKey, char[]) decryptFileKey}<br>
  * - Cipher creation for file encryption: {@link #createFileEncryptionCipher(PlainFileKey) createFileEncryptionCipher}<br>
  * - Cipher creation for file decryption: {@link #createFileDecryptionCipher(PlainFileKey) createFileDecryptionCipher}<br>
  */
@@ -120,21 +119,20 @@ public class Crypto {
      * @throws InvalidPasswordException If the password to secure the private key is invalid.
      * @throws CryptoSystemException    If a unknown error occurred.
      */
-    public static UserKeyPair generateUserKeyPair(UserKeyPair.Version version, String password)
+    public static UserKeyPair generateUserKeyPair(UserKeyPair.Version version, char[] password)
             throws IllegalArgumentException, InvalidKeyPairException, InvalidPasswordException,
             CryptoSystemException {
         // SONAR: Constants for the parameter names would be overkill
         Validator.validateNotNull("version", version); //NOSONAR
-        Validator.validateString("password", password); //NOSONAR
+        Validator.validateCharArray("password", password); //NOSONAR
 
         KeyPair keyPair = generateKeyPair(version);
 
-        String privateKeyString = encryptPrivateKey(keyPair.getPrivate(), password);
-        String publicKeyString = getStringFromPublicKey(keyPair.getPublic());
+        char[] privateKey = encryptEncodePrivateKey(keyPair.getPrivate(), password);
+        char[] publicKey = encodePublicKey(keyPair.getPublic());
 
-        UserPrivateKey userPrivateKey = new UserPrivateKey(version, privateKeyString);
-
-        UserPublicKey userPublicKey = new UserPublicKey(version, publicKeyString);
+        UserPrivateKey userPrivateKey = new UserPrivateKey(version, privateKey);
+        UserPublicKey userPublicKey = new UserPublicKey(version, publicKey);
 
         return new UserKeyPair(userPrivateKey, userPublicKey);
     }
@@ -163,14 +161,14 @@ public class Crypto {
         }
     }
 
-    private static String encryptPrivateKey(PrivateKey privateKey, String password)
+    private static char[] encryptEncodePrivateKey(PrivateKey key, char[] password)
             throws InvalidPasswordException, CryptoSystemException {
         OutputEncryptor encryptor;
         try {
             encryptor = new JceOpenSSLPKCS8EncryptorBuilder(PKCS8Generator.AES_256_CBC)
                     .setProvider("BC")
                     .setIterationCount(HASH_ITERATION_COUNT)
-                    .setPassword(password.toCharArray())
+                    .setPassword(password)
                     .build();
         } catch (OperatorCreationException e) {
             throw new CryptoSystemException("Could not encrypt private key. Creation of PKCS8" +
@@ -179,33 +177,32 @@ public class Crypto {
 
         PKCS8Generator generator;
         try {
-            generator = new JcaPKCS8Generator(privateKey, encryptor);
+            generator = new JcaPKCS8Generator(key, encryptor);
         } catch (PemGenerationException e) {
             throw new InvalidPasswordException("Could not encrypt private key. Invalid private " +
                     "key password.", e);
         }
 
         try {
-            StringWriter stringWriter = new StringWriter();
-            JcaPEMWriter pemWriter = new JcaPEMWriter(stringWriter);
+            CharArrayWriter charWriter = new CharArrayWriter();
+            JcaPEMWriter pemWriter = new JcaPEMWriter(charWriter);
             pemWriter.writeObject(generator);
             pemWriter.close();
-            return stringWriter.toString();
+            return charWriter.toCharArray();
         } catch (IOException e) {
             throw new CryptoSystemException("Could not encrypt private key. PEM encoding failed.",
                     e);
         }
     }
 
-    private static PrivateKey decryptPrivateKey(String privateKey, String password)
+    private static PrivateKey decryptDecodePrivateKey(char[] key, char[] password)
             throws InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
         Object obj;
         try {
-            ByteArrayInputStream in = new ByteArrayInputStream(privateKey.getBytes());
-            PEMParser pemReader = new PEMParser(new InputStreamReader(in));
+            CharArrayReader charReader = new CharArrayReader(key);
+            PEMParser pemReader = new PEMParser(charReader);
             obj = pemReader.readObject();
             pemReader.close();
-            in.close();
         } catch (Exception e) {
             throw new InvalidKeyPairException("Could not decrypt private key. PEM decoding failed.",
                     e);
@@ -217,7 +214,7 @@ public class Crypto {
                 PKCS8EncryptedPrivateKeyInfo epkInfo = (PKCS8EncryptedPrivateKeyInfo) obj;
                 InputDecryptorProvider decryptor = new JceOpenSSLPKCS8DecryptorProviderBuilder()
                         .setProvider("BC")
-                        .build(password.toCharArray());
+                        .build(password);
                 pkInfo = epkInfo.decryptPrivateKeyInfo(decryptor);
             } else {
                 throw new InvalidKeyPairException("Could not decrypt private key. Provided key " +
@@ -243,27 +240,26 @@ public class Crypto {
         }
     }
 
-    private static String getStringFromPublicKey(PublicKey pubKey) throws InvalidKeyPairException {
+    private static char[] encodePublicKey(PublicKey key) throws InvalidKeyPairException {
         try {
-            StringWriter writer = new StringWriter();
-            JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
-            pemWriter.writeObject(pubKey);
+            CharArrayWriter charWriter = new CharArrayWriter();
+            JcaPEMWriter pemWriter = new JcaPEMWriter(charWriter);
+            pemWriter.writeObject(key);
             pemWriter.close();
-            return writer.toString();
+            return charWriter.toCharArray();
         } catch (IOException e) {
             throw new InvalidKeyPairException("Could not encode public key. PEM encoding failed.",
                     e);
         }
     }
 
-    private static PublicKey getPublicKeyFromString(String pubKey) throws InvalidKeyPairException {
+    private static PublicKey decodePublicKey(char[] key) throws InvalidKeyPairException {
         Object obj;
         try {
-            ByteArrayInputStream in = new ByteArrayInputStream(pubKey.getBytes());
-            PEMParser pemReader = new PEMParser(new InputStreamReader(in));
+            CharArrayReader charReader = new CharArrayReader(key);
+            PEMParser pemReader = new PEMParser(charReader);
             obj = pemReader.readObject();
             pemReader.close();
-            in.close();
         } catch (Exception e) {
             throw new InvalidKeyPairException("Could not decode public key. PEM decoding failed.",
                     e);
@@ -300,18 +296,18 @@ public class Crypto {
      * @throws InvalidKeyPairException If the user key pair is invalid.
      * @throws CryptoSystemException   If a unknown error occurred.
      */
-    public static boolean checkUserKeyPair(UserKeyPair userKeyPair, String password)
+    public static boolean checkUserKeyPair(UserKeyPair userKeyPair, char[] password)
             throws InvalidKeyPairException, CryptoSystemException {
         // SONAR: Constants for the parameter names would be overkill
         Validator.validateNotNull("userKeyPair", userKeyPair); //NOSONAR
-        Validator.validateString("password", password); //NOSONAR
+        Validator.validateCharArray("password", password); //NOSONAR
 
-        if (password == null || password.isEmpty()) {
+        if (password == null || password.length == 0) {
             return false;
         }
 
         try {
-            decryptPrivateKey(userKeyPair.getUserPrivateKey().getPrivateKey(), password);
+            decryptDecodePrivateKey(userKeyPair.getUserPrivateKey().getPrivateKey(), password);
             return true;
         } catch(InvalidPasswordException e) {
             return false;
@@ -343,7 +339,7 @@ public class Crypto {
         EncryptedFileKey.Version encFileKeyVersion = getEncryptedFileKeyVersion(
                 userPublicKey.getVersion(), plainFileKey.getVersion());
 
-        PublicKey publicKey = getPublicKeyFromString(userPublicKey.getPublicKey());
+        PublicKey publicKey = decodePublicKey(userPublicKey.getPublicKey());
 
         Cipher cipher;
         try {
@@ -357,7 +353,7 @@ public class Crypto {
             throw new InvalidKeyPairException("Could not encrypt file key. Invalid public key.", e);
         }
 
-        byte[] pFileKey = CryptoUtils.stringToByteArray(plainFileKey.getKey());
+        byte[] pFileKey = plainFileKey.getKey();
         byte[] eFileKey;
         try {
             eFileKey = cipher.doFinal(pFileKey);
@@ -365,8 +361,8 @@ public class Crypto {
             throw new CryptoSystemException("Could not encrypt file key. Encryption failed.", e);
         }
 
-        EncryptedFileKey encFileKey = new EncryptedFileKey(encFileKeyVersion, CryptoUtils
-                .byteArrayToString(eFileKey), plainFileKey.getIv());
+        EncryptedFileKey encFileKey = new EncryptedFileKey(encFileKeyVersion, eFileKey,
+                plainFileKey.getIv());
 
         encFileKey.setTag(plainFileKey.getTag());
 
@@ -389,17 +385,17 @@ public class Crypto {
      * @throws CryptoSystemException    If a unknown error occurred.
      */
     public static PlainFileKey decryptFileKey(EncryptedFileKey encFileKey,
-            UserPrivateKey userPrivateKey, String password) throws InvalidFileKeyException,
+            UserPrivateKey userPrivateKey, char[] password) throws InvalidFileKeyException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
         // SONAR: Constants for the parameter names would be overkill
         Validator.validateNotNull("encFileKey", encFileKey); //NOSONAR
         Validator.validateNotNull("userPrivateKey", userPrivateKey); //NOSONAR
-        Validator.validateString("password", password); //NOSONAR
+        Validator.validateCharArray("password", password); //NOSONAR
 
         PlainFileKey.Version plainFileKeyVersion = getPlainFileKeyVersion(
                 userPrivateKey.getVersion(), encFileKey.getVersion());
 
-        PrivateKey privateKey = decryptPrivateKey(userPrivateKey.getPrivateKey(), password);
+        PrivateKey privateKey = decryptDecodePrivateKey(userPrivateKey.getPrivateKey(), password);
 
         Cipher cipher;
         try {
@@ -413,7 +409,7 @@ public class Crypto {
             throw new InvalidKeyPairException("Could not decrypt file key. Invalid private key.", e);
         }
 
-        byte[] eFileKey = CryptoUtils.stringToByteArray(encFileKey.getKey());
+        byte[] eFileKey = encFileKey.getKey();
         byte[] dFileKey;
         try {
             dFileKey = cipher.doFinal(eFileKey);
@@ -421,8 +417,8 @@ public class Crypto {
             throw new InvalidFileKeyException("Could not decrypt file key. Encryption failed.", e);
         }
 
-        PlainFileKey plainFileKey = new PlainFileKey(plainFileKeyVersion, CryptoUtils.
-                byteArrayToString(dFileKey), encFileKey.getIv());
+        PlainFileKey plainFileKey = new PlainFileKey(plainFileKeyVersion, dFileKey,
+                encFileKey.getIv());
 
         plainFileKey.setTag(encFileKey.getTag());
 
@@ -478,8 +474,7 @@ public class Crypto {
         byte[] key = generateSecureRandomByteArray(FILE_KEY_SIZE);
         byte[] iv = generateSecureRandomByteArray(IV_SIZE);
 
-        return new PlainFileKey(version, CryptoUtils.byteArrayToString(key), CryptoUtils
-                .byteArrayToString(iv));
+        return new PlainFileKey(version, key, iv);
     }
 
     private static byte[] generateSecureRandomByteArray(int size) {

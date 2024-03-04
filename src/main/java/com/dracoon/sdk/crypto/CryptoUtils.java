@@ -18,7 +18,7 @@ public class CryptoUtils {
      *
      * @return The Base64 encoded string.
      */
-    public static String byteArrayToString(byte[] bytes) {
+    public static String byteArrayToBase64String(byte[] bytes) {
         return Base64.toBase64String(bytes);
     }
 
@@ -29,7 +29,7 @@ public class CryptoUtils {
      *
      * @return The decoded byte array.
      */
-    public static byte[] stringToByteArray(String base64String) {
+    public static byte[] base64StringToByteArray(String base64String) {
         return Base64.decode(base64String);
     }
 

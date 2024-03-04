@@ -10,20 +10,20 @@ import com.dracoon.sdk.crypto.internal.Validator;
 public class UserPrivateKey {
 
     private final UserKeyPair.Version version;
-    private final String privateKey;
+    private final char[] privateKey;
 
     /**
      * Constructs a new user private key.
      *
      * @param version    The private key version.
-     * @param privateKey The PEM encoded private key string.
+     * @param privateKey The PEM encoded private key.
      *
      * @throws IllegalArgumentException If a parameter is invalid (e.g. null or empty).
      */
-    public UserPrivateKey(UserKeyPair.Version version, String privateKey)
+    public UserPrivateKey(UserKeyPair.Version version, char[] privateKey)
             throws IllegalArgumentException {
         Validator.validateNotNull("version", version);
-        Validator.validateString("privateKey", privateKey);
+        Validator.validateCharArray("privateKey", privateKey);
         this.version = version;
         this.privateKey = privateKey;
     }
@@ -38,11 +38,11 @@ public class UserPrivateKey {
     }
 
     /**
-     * Returns the PEM encoded private key string.
+     * Returns the PEM encoded private key.
      *
-     * @return the string
+     * @return the private key
      */
-    public String getPrivateKey() {
+    public char[] getPrivateKey() {
         return privateKey;
     }
 

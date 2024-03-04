@@ -65,8 +65,8 @@ public class UserKeyPair {
             throws IllegalArgumentException {
         Validator.validateNotNull("userPrivateKey", userPrivateKey);
         Validator.validateNotNull("userPublicKey", userPublicKey);
-        Validator.validateEqual("userPublicKey.version", userPublicKey,
-                "userPublicKey.version", userPublicKey);
+        Validator.validateEqual("userPrivateKey.version", userPrivateKey.getVersion(),
+                "userPublicKey.version", userPublicKey.getVersion());
         this.userPrivateKey = userPrivateKey;
         this.userPublicKey = userPublicKey;
     }

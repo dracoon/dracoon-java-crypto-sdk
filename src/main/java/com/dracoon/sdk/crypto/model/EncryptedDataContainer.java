@@ -3,9 +3,8 @@ package com.dracoon.sdk.crypto.model;
 /**
  * Holds encrypted data.
  */
-public class EncryptedDataContainer {
+public class EncryptedDataContainer extends DataContainer {
 
-    private final byte[] content;
     private final byte[] tag;
 
     /**
@@ -15,17 +14,8 @@ public class EncryptedDataContainer {
      * @param tag     The encryption tag.
      */
     public EncryptedDataContainer(byte[] content, byte[] tag) {
-        this.content = content;
+        super(content);
         this.tag = tag;
-    }
-
-    /**
-     * Returns the encrypted data.
-     *
-     * @return the encrypted data bytes
-     */
-    public byte[] getContent() {
-        return content;
     }
 
     /**

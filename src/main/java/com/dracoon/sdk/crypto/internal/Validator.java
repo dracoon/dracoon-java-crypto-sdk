@@ -14,11 +14,22 @@ public class Validator {
         }
     }
 
-    public static void validateString(String name, String string) {
-        validateNotNull(name, string);
-        if (string.isEmpty()) {
-            throw new IllegalArgumentException(String.format("'%s' cannot be empty.", name));
+    public static void validateCharArray(String name, char[] chars) {
+        validateNotNull(name, chars);
+        if (chars.length == 0) {
+            throwEmptyIllegalArgumentException(name);
         }
+    }
+
+    public static void validateByteArray(String name, byte[] bytes) {
+        validateNotNull(name, bytes);
+        if (bytes.length == 0) {
+            throwEmptyIllegalArgumentException(name);
+        }
+    }
+
+    private static void throwEmptyIllegalArgumentException(String name) {
+        throw new IllegalArgumentException(String.format("'%s' cannot be empty.", name));
     }
 
     public static <T> void validateEqual(String name1, T value1, String name2, T value2) {

@@ -8,6 +8,7 @@ import java.util.Objects;
 
 import com.dracoon.sdk.crypto.error.BadFileException;
 import com.dracoon.sdk.crypto.error.CryptoSystemException;
+import com.dracoon.sdk.crypto.error.UnknownVersionException;
 import com.dracoon.sdk.crypto.model.EncryptedDataContainer;
 import com.dracoon.sdk.crypto.model.PlainDataContainer;
 import com.dracoon.sdk.crypto.model.PlainFileKey;
@@ -21,10 +22,10 @@ public abstract class FileDecryptionBaseTest {
     protected void testDecryptSingleBlock(String pfkFileName, String efcFileName, String pfcFileName,
             Boolean mustFcMatch) throws BadFileException, IllegalArgumentException,
             IllegalStateException, IOException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, pfkFileName);
-        byte[] ft = CryptoUtils.stringToByteArray(pfk.getTag());
-        byte[] efc = TestUtils.readFile(efcFileName);
-        byte[] pfc = TestUtils.readFile(pfcFileName);
+        PlainFileKey pfk = readPlainFileKey(pfkFileName);
+        byte[] ft = pfk.getTag();
+        byte[] efc = readFile(efcFileName);
+        byte[] pfc = readFile(pfcFileName);
 
         FileDecryptionCipher c = Crypto.createFileDecryptionCipher(pfk);
 
@@ -48,10 +49,10 @@ public abstract class FileDecryptionBaseTest {
     protected void testDecryptMultiBlock(String pfkFileName, String efcFileName, String pfcFileName,
             Boolean mustFcMatch) throws BadFileException, IllegalArgumentException,
             IllegalStateException, IOException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, pfkFileName);
-        byte[] ft = CryptoUtils.stringToByteArray(pfk.getTag());
-        byte[] efc = TestUtils.readFile(efcFileName);
-        byte[] pfc = TestUtils.readFile(pfcFileName);
+        PlainFileKey pfk = readPlainFileKey(pfkFileName);
+        byte[] ft = pfk.getTag();
+        byte[] efc = readFile(efcFileName);
+        byte[] pfc = readFile(pfcFileName);
 
         FileDecryptionCipher c = Crypto.createFileDecryptionCipher(pfk);
 
@@ -87,7 +88,7 @@ public abstract class FileDecryptionBaseTest {
 
     protected void testDecryptProcessArguments(String pfkFileName, EncryptedDataContainer edc)
             throws IllegalArgumentException, IllegalStateException, CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, pfkFileName);
+        PlainFileKey pfk = readPlainFileKey(pfkFileName);
         FileDecryptionCipher c = Crypto.createFileDecryptionCipher(pfk);
         c.processBytes(edc);
     }
@@ -95,7 +96,7 @@ public abstract class FileDecryptionBaseTest {
     protected void testDecryptDoFinalArguments(String pfkFileName, EncryptedDataContainer edc)
             throws BadFileException, IllegalArgumentException, IllegalStateException,
             CryptoSystemException {
-        PlainFileKey pfk = TestUtils.readData(PlainFileKey.class, pfkFileName);
+        PlainFileKey pfk = readPlainFileKey(pfkFileName);
         FileDecryptionCipher c = Crypto.createFileDecryptionCipher(pfk);
         c.doFinal(edc);
     }
@@ -109,6 +110,18 @@ public abstract class FileDecryptionBaseTest {
         } else if (Objects.equals(mustFcMatch, Boolean.FALSE)) {
             assertFalse("File content does match!", isFcEqual);
         }
+    }
+
+    private static PlainFileKey readPlainFileKey(String fileName) {
+        try {
+            return TestUtils.readPlainFileKey(fileName);
+        } catch (UnknownVersionException e) {
+            throw new RuntimeException("Test file key version unknown!", e);
+        }
+    }
+
+    private static byte[] readFile(String fileName) {
+        return TestUtils.readFile(fileName);
     }
 
 }
