@@ -18,7 +18,7 @@ stages:
   - rollout
 
 image:
-  name: maven:3-eclipse-temurin-21
+  name: maven:3-eclipse-temurin-17
 
 .job-template:
   secrets:
