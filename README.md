@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.com/dracoon/dracoon-java-crypto-sdk.svg?branch=main)](https://travis-ci.org/dracoon/)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.dracoon/dracoon-crypto-sdk/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.dracoon/dracoon-crypto-sdk)
 # Dracoon Java Crypto SDK
 
