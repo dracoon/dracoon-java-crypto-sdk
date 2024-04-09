@@ -1,3 +1,4 @@
+[![Build](https://github.com/dracoon/dracoon-java-crypto-sdk/actions/workflows/build.yml/badge.svg)](https://github.com/dracoon/dracoon-java-crypto-sdk/actions/workflows/build.yml)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.dracoon/dracoon-crypto-sdk/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.dracoon/dracoon-crypto-sdk)
 # Dracoon Java Crypto SDK
 
