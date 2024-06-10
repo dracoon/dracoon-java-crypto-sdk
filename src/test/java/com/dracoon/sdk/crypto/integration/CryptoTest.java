@@ -8,14 +8,11 @@ import com.dracoon.sdk.crypto.error.InvalidPasswordException;
 import com.dracoon.sdk.crypto.error.UnknownVersionException;
 import com.dracoon.sdk.crypto.model.EncryptedFileKey;
 import com.dracoon.sdk.crypto.model.PlainFileKey;
-import com.dracoon.sdk.crypto.model.UserKeyPair;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(IntegrationTest.class)
 public abstract class CryptoTest extends CryptoBaseTest {
-
-    public abstract String password(UserKeyPair.Version version);
 
     public abstract String data(String subPath);
 
@@ -29,7 +26,7 @@ public abstract class CryptoTest extends CryptoBaseTest {
         testCheckUserKeyPair(
                 data("kp_rsa2048/private_key.json"),
                 data("kp_rsa2048/public_key.json"),
-                password(UserKeyPair.Version.RSA2048),
+                data("kp_rsa2048/pw.txt"),
                 true);
     }
 
@@ -39,7 +36,7 @@ public abstract class CryptoTest extends CryptoBaseTest {
         testCheckUserKeyPair(
                 data("kp_rsa4096/private_key.json"),
                 data("kp_rsa4096/public_key.json"),
-                password(UserKeyPair.Version.RSA4096),
+                data("kp_rsa4096/pw.txt"),
                 true);
     }
 
@@ -49,7 +46,7 @@ public abstract class CryptoTest extends CryptoBaseTest {
         testCheckUserKeyPair(
                 data("kp_rsa4096_kdfv2/private_key.json"),
                 data("kp_rsa4096_kdfv2/public_key.json"),
-                password(UserKeyPair.Version.RSA4096),
+                data("kp_rsa4096_kdfv2/pw.txt"),
                 true);
     }
 
@@ -90,7 +87,7 @@ public abstract class CryptoTest extends CryptoBaseTest {
         PlainFileKey testPfk = decryptFileKey(
                 data("fk_rsa2048_aes256gcm/enc_file_key.json"),
                 data("kp_rsa2048/private_key.json"),
-                password(UserKeyPair.Version.RSA2048));
+                data("kp_rsa2048/pw.txt"));
 
         validatePlainFileKey(pfk, testPfk);
     }
@@ -104,7 +101,7 @@ public abstract class CryptoTest extends CryptoBaseTest {
         PlainFileKey testPfk = decryptFileKey(
                 data("fk_rsa4096_aes256gcm/enc_file_key.json"),
                 data("kp_rsa4096/private_key.json"),
-                password(UserKeyPair.Version.RSA4096));
+                data("kp_rsa4096/pw.txt"));
 
         validatePlainFileKey(pfk, testPfk);
     }
