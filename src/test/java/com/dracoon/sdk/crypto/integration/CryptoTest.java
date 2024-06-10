@@ -50,6 +50,16 @@ public abstract class CryptoTest extends CryptoBaseTest {
                 true);
     }
 
+    @Test
+    public void testCheckUserKeyPair_Rsa4096_PwEncUtf8WithUmlautAndEmoticon_Success()
+            throws UnknownVersionException, InvalidKeyPairException, CryptoSystemException {
+        testCheckUserKeyPair(
+                data("kp_rsa4096_pw_utf8_umlaut_emoticon/private_key.json"),
+                data("kp_rsa4096_pw_utf8_umlaut_emoticon/public_key.json"),
+                data("kp_rsa4096_pw_utf8_umlaut_emoticon/pw.txt"),
+                true);
+    }
+
     // ### FILE KEY ENCRYPTION TESTS ###
 
     @Test
