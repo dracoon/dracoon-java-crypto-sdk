@@ -55,12 +55,13 @@ public abstract class CryptoBaseTest {
 
     // ### KEY PAIR CHECK TESTS ###
 
-    protected void testCheckUserKeyPair(String uprkFileName, String upukFileName, String pw,
+    protected void testCheckUserKeyPair(String uprkFileName, String upukFileName, String pwFileName,
             Boolean mustBeOk) throws UnknownVersionException, InvalidKeyPairException,
             CryptoSystemException {
         UserPrivateKey uprk = readUserPrivateKey(uprkFileName);
         UserPublicKey upuk = readUserPublicKey(upukFileName);
         UserKeyPair ukp = new UserKeyPair(uprk, upuk);
+        String pw = readPassword(pwFileName);
         boolean testCheck = Crypto.checkUserKeyPair(ukp, toCharArray(pw));
 
         if (Objects.equals(mustBeOk, Boolean.TRUE)) {
@@ -96,11 +97,12 @@ public abstract class CryptoBaseTest {
         assertEquals("Version is incorrect!", pfk.getVersion(), testPfk.getVersion());
     }
 
-    protected PlainFileKey decryptFileKey(String efkFileName, String upkFileName, String pw)
+    protected PlainFileKey decryptFileKey(String efkFileName, String upkFileName, String pwFileName)
             throws UnknownVersionException, InvalidFileKeyException, InvalidKeyPairException,
             InvalidPasswordException, CryptoSystemException {
         EncryptedFileKey efk = readEncryptedFileKey(efkFileName);
         UserPrivateKey upk = readUserPrivateKey(upkFileName);
+        String pw = readPassword(pwFileName);
         return Crypto.decryptFileKey(efk, upk, toCharArray(pw));
     }
 
@@ -157,6 +159,10 @@ public abstract class CryptoBaseTest {
     private static UserPublicKey readUserPublicKey(String fileName)
             throws UnknownVersionException {
         return TestUtils.readUserPublicKey(fileName);
+    }
+
+    private static String readPassword(String fileName) {
+        return TestUtils.readPassword(fileName);
     }
 
     protected static EncryptedFileKey readEncryptedFileKey(String fileName)

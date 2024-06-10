@@ -23,14 +23,14 @@ public class CryptoTest extends CryptoBaseTest {
     @Test
     public void testGenerateUserKeyPair_Rsa2048_Success() throws UnknownVersionException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        UserKeyPair testUkp = generateUserKeyPair("A", "Qwer1234!");
+        UserKeyPair testUkp = generateUserKeyPair("A");
         validateKeyPair(testUkp, "A");
     }
 
     @Test
     public void testGenerateUserKeyPair_Rsa4096_Success() throws UnknownVersionException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        UserKeyPair testUkp = generateUserKeyPair("RSA-4096", "Qwer1234!");
+        UserKeyPair testUkp = generateUserKeyPair("RSA-4096");
         validateKeyPair(testUkp, "RSA-4096");
     }
 
@@ -39,13 +39,18 @@ public class CryptoTest extends CryptoBaseTest {
     @Test(expected = IllegalArgumentException.class)
     public void testGenerateUserKeyPair_VersionNull() throws UnknownVersionException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        generateUserKeyPair(null, "Qwer1234!");
+        generateUserKeyPair(null);
     }
 
     @Test(expected = UnknownVersionException.class)
     public void testGenerateUserKeyPair_VersionInvalid() throws UnknownVersionException,
             InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
-        generateUserKeyPair("Z", "Qwer1234!");
+        generateUserKeyPair("Z");
+    }
+
+    private UserKeyPair generateUserKeyPair(String version) throws UnknownVersionException,
+            InvalidKeyPairException, InvalidPasswordException, CryptoSystemException {
+        return super.generateUserKeyPair(version, "Qwer1234!");
     }
 
     // --- Tests for invalid password ---
@@ -72,7 +77,7 @@ public class CryptoTest extends CryptoBaseTest {
         testCheckUserKeyPair(
                 data("kp_rsa2048/private_key.json"),
                 data("kp_rsa2048/public_key.json"),
-                "Qwer1234!",
+                data("kp_general/pw.txt"),
                 true);
     }
 
@@ -82,7 +87,37 @@ public class CryptoTest extends CryptoBaseTest {
         testCheckUserKeyPair(
                 data("kp_rsa4096/private_key.json"),
                 data("kp_rsa4096/public_key.json"),
-                "Qwer1234!",
+                data("kp_general/pw.txt"),
+                true);
+    }
+
+    @Test
+    public void testCheckUserKeyPair_Rsa4096_PwEncIsoWithUmlaut_Success()
+            throws UnknownVersionException, InvalidKeyPairException, CryptoSystemException {
+        testCheckUserKeyPair(
+                data("kp_rsa4096/private_key_pw_iso_umlaut.json"),
+                data("kp_rsa4096/public_key_pw_iso_umlaut.json"),
+                data("kp_general/pw_umlaut.txt"),
+                true);
+    }
+
+    @Test
+    public void testCheckUserKeyPair_Rsa4096_PwEncUtf8WithUmlaut_Success()
+            throws UnknownVersionException, InvalidKeyPairException, CryptoSystemException {
+        testCheckUserKeyPair(
+                data("kp_rsa4096/private_key_pw_utf8_umlaut.json"),
+                data("kp_rsa4096/public_key_pw_utf8_umlaut.json"),
+                data("kp_general/pw_umlaut.txt"),
+                true);
+    }
+
+    @Test
+    public void testCheckUserKeyPair_Rsa4096_PwEncUtf8WithEmoticon_Success()
+            throws UnknownVersionException, InvalidKeyPairException, CryptoSystemException {
+        testCheckUserKeyPair(
+                data("kp_rsa4096/private_key_pw_utf8_emoticon.json"),
+                data("kp_rsa4096/public_key_pw_utf8_emoticon.json"),
+                data("kp_general/pw_emoticon.txt"),
                 true);
     }
 
@@ -102,7 +137,7 @@ public class CryptoTest extends CryptoBaseTest {
         testCheckUserKeyPair(
                 data("kp_general/private_key_bad_version.json"),
                 data("kp_rsa2048/public_key.json"),
-                "Qwer1234!",
+                data("kp_general/pw.txt"),
                 null);
     }
 
@@ -112,7 +147,7 @@ public class CryptoTest extends CryptoBaseTest {
         testCheckUserKeyPair(
                 data("kp_general/private_key_bad_pem.json"),
                 data("kp_rsa2048/public_key.json"),
-                "Qwer1234!",
+                data("kp_general/pw.txt"),
                 null);
     }
 
@@ -122,7 +157,7 @@ public class CryptoTest extends CryptoBaseTest {
         testCheckUserKeyPair(
                 data("kp_general/private_key_bad_asn1.json"),
                 data("kp_rsa2048/public_key.json"),
-                "Qwer1234!",
+                data("kp_general/pw.txt"),
                 true);
     }
 
@@ -132,7 +167,7 @@ public class CryptoTest extends CryptoBaseTest {
         testCheckUserKeyPair(
                 data("kp_general/private_key_bad_value.json"),
                 data("kp_rsa2048/public_key.json"),
-                "Qwer1234!",
+                data("kp_general/pw.txt"),
                 null);
     }
 
@@ -154,7 +189,7 @@ public class CryptoTest extends CryptoBaseTest {
         testCheckUserKeyPair(
                 data("kp_rsa2048/private_key.json"),
                 data("kp_rsa2048/public_key.json"),
-                "Invalid-Password",
+                data("kp_general/pw_invalid.txt"),
                 false);
     }
 
@@ -253,7 +288,7 @@ public class CryptoTest extends CryptoBaseTest {
         PlainFileKey testPfk = decryptFileKey(
                 data("fk_rsa2048_aes256gcm/enc_file_key.json"),
                 data("kp_rsa2048/private_key.json"),
-                "Qwer1234!");
+                data("kp_general/pw.txt"));
 
         validatePlainFileKey(pfk, testPfk);
     }
@@ -267,7 +302,7 @@ public class CryptoTest extends CryptoBaseTest {
         PlainFileKey testPfk = decryptFileKey(
                 data("fk_rsa4096_aes256gcm/enc_file_key.json"),
                 data("kp_rsa4096/private_key.json"),
-                "Qwer1234!");
+                data("kp_general/pw.txt"));
 
         validatePlainFileKey(pfk, testPfk);
     }
@@ -281,7 +316,7 @@ public class CryptoTest extends CryptoBaseTest {
         decryptFileKey(
                 data("fk_rsa2048_aes256gcm/enc_file_key.json"),
                 data("kp_rsa4096/private_key.json"),
-                "Qwer1234!");
+                data("kp_general/pw.txt"));
     }
 
     // --- Tests for invalid file key ---
@@ -293,7 +328,7 @@ public class CryptoTest extends CryptoBaseTest {
         decryptFileKey(
                 null,
                 data("kp_rsa2048/private_key.json"),
-                "Qwer1234!");
+                data("kp_general/pw.txt"));
     }
 
     @Test(expected = UnknownVersionException.class)
@@ -303,7 +338,7 @@ public class CryptoTest extends CryptoBaseTest {
         decryptFileKey(
                 data("fk_general/enc_file_key_bad_version.json"),
                 data("kp_rsa2048/private_key.json"),
-                "Qwer1234!");
+                data("kp_general/pw.txt"));
     }
 
     @Test(expected = InvalidFileKeyException.class)
@@ -313,7 +348,7 @@ public class CryptoTest extends CryptoBaseTest {
         decryptFileKey(
                 data("fk_general/enc_file_key_bad_key.json"),
                 data("kp_rsa2048/private_key.json"),
-                "Qwer1234!");
+                data("kp_general/pw.txt"));
     }
 
     // --- Tests for invalid private key ---
@@ -325,7 +360,7 @@ public class CryptoTest extends CryptoBaseTest {
         decryptFileKey(
                 data("fk_rsa2048_aes256gcm/enc_file_key.json"),
                 null,
-                "Qwer1234!");
+                data("kp_general/pw.txt"));
     }
 
     @Test(expected = UnknownVersionException.class)
@@ -335,7 +370,7 @@ public class CryptoTest extends CryptoBaseTest {
         decryptFileKey(
                 data("fk_rsa2048_aes256gcm/enc_file_key.json"),
                 data("kp_general/private_key_bad_version.json"),
-                "Qwer1234!");
+                data("kp_general/pw.txt"));
     }
 
     @Test(expected = InvalidKeyPairException.class)
@@ -345,7 +380,7 @@ public class CryptoTest extends CryptoBaseTest {
         decryptFileKey(
                 data("fk_rsa2048_aes256gcm/enc_file_key.json"),
                 data("kp_general/private_key_bad_pem.json"),
-                "Qwer1234!");
+                data("kp_general/pw.txt"));
     }
 
     @Test(expected = InvalidKeyPairException.class)
@@ -355,7 +390,7 @@ public class CryptoTest extends CryptoBaseTest {
         decryptFileKey(
                 data("fk_rsa2048_aes256gcm/enc_file_key.json"),
                 data("kp_general/private_key_bad_value.json"),
-                "Qwer1234!");
+                data("kp_general/pw.txt"));
     }
 
     // --- Tests for invalid password ---
@@ -377,7 +412,7 @@ public class CryptoTest extends CryptoBaseTest {
         decryptFileKey(
                 data("fk_rsa2048_aes256gcm/enc_file_key.json"),
                 data("kp_rsa2048/private_key.json"),
-                "Invalid-Password");
+                data("kp_general/pw_invalid.txt"));
     }
 
     // ### FILE KEY CREATION TESTS ###
