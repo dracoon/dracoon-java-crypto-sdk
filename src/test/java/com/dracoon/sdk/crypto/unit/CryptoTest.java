@@ -91,6 +91,36 @@ public class CryptoTest extends CryptoBaseTest {
                 true);
     }
 
+    @Test
+    public void testCheckUserKeyPair_Rsa4096_PwEncIsoWithUmlaut_Success()
+            throws UnknownVersionException, InvalidKeyPairException, CryptoSystemException {
+        testCheckUserKeyPair(
+                data("kp_rsa4096/private_key_pw_iso_umlaut.json"),
+                data("kp_rsa4096/public_key_pw_iso_umlaut.json"),
+                data("kp_general/pw_umlaut.txt"),
+                true);
+    }
+
+    @Test
+    public void testCheckUserKeyPair_Rsa4096_PwEncUtf8WithUmlaut_Success()
+            throws UnknownVersionException, InvalidKeyPairException, CryptoSystemException {
+        testCheckUserKeyPair(
+                data("kp_rsa4096/private_key_pw_utf8_umlaut.json"),
+                data("kp_rsa4096/public_key_pw_utf8_umlaut.json"),
+                data("kp_general/pw_umlaut.txt"),
+                true);
+    }
+
+    @Test
+    public void testCheckUserKeyPair_Rsa4096_PwEncUtf8WithEmoticon_Success()
+            throws UnknownVersionException, InvalidKeyPairException, CryptoSystemException {
+        testCheckUserKeyPair(
+                data("kp_rsa4096/private_key_pw_utf8_emoticon.json"),
+                data("kp_rsa4096/public_key_pw_utf8_emoticon.json"),
+                data("kp_general/pw_emoticon.txt"),
+                true);
+    }
+
     // --- Tests for invalid key pair ---
 
     @Test(expected = IllegalArgumentException.class)

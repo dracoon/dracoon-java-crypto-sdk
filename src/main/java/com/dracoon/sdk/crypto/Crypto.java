@@ -29,6 +29,7 @@ import com.dracoon.sdk.crypto.error.InvalidKeyPairException;
 import com.dracoon.sdk.crypto.error.InvalidPasswordException;
 import com.dracoon.sdk.crypto.internal.AesGcmFileDecryptionCipher;
 import com.dracoon.sdk.crypto.internal.AesGcmFileEncryptionCipher;
+import com.dracoon.sdk.crypto.internal.CryptoUtils;
 import com.dracoon.sdk.crypto.internal.Validator;
 import com.dracoon.sdk.crypto.model.EncryptedFileKey;
 import com.dracoon.sdk.crypto.model.PlainFileKey;
@@ -165,10 +166,11 @@ public class Crypto {
             throws InvalidPasswordException, CryptoSystemException {
         OutputEncryptor encryptor;
         try {
+            char[] encodedPassword = CryptoUtils.toUtf8CharArray(password);
             encryptor = new JceOpenSSLPKCS8EncryptorBuilder(PKCS8Generator.AES_256_CBC)
                     .setProvider("BC")
                     .setIterationCount(HASH_ITERATION_COUNT)
-                    .setPassword(password)
+                    .setPassword(encodedPassword)
                     .build();
         } catch (OperatorCreationException e) {
             throw new CryptoSystemException("Could not encrypt private key. Creation of PKCS8" +
@@ -209,23 +211,17 @@ public class Crypto {
         }
 
         PrivateKeyInfo pkInfo;
-        try {
-            if (obj instanceof PKCS8EncryptedPrivateKeyInfo) {
-                PKCS8EncryptedPrivateKeyInfo epkInfo = (PKCS8EncryptedPrivateKeyInfo) obj;
-                InputDecryptorProvider decryptor = new JceOpenSSLPKCS8DecryptorProviderBuilder()
-                        .setProvider("BC")
-                        .build(password);
-                pkInfo = epkInfo.decryptPrivateKeyInfo(decryptor);
-            } else {
-                throw new InvalidKeyPairException("Could not decrypt private key. Provided key " +
-                        "is not a PKCS8 encrypted private key.");
+        if (obj instanceof PKCS8EncryptedPrivateKeyInfo) {
+            PKCS8EncryptedPrivateKeyInfo epkInfo = (PKCS8EncryptedPrivateKeyInfo) obj;
+            try {
+                char[] encodedPassword = CryptoUtils.toUtf8CharArray(password);
+                pkInfo = decryptPrivateKey(epkInfo, encodedPassword);
+            } catch (InvalidPasswordException e) {
+                pkInfo = decryptPrivateKey(epkInfo, password);
             }
-        } catch (OperatorCreationException e) {
-            throw new CryptoSystemException("Could not decrypt private key. Creation of PKCS8 " +
-                    "decryptor failed.", e);
-        } catch (PKCSException e) {
-            throw new InvalidPasswordException("Could not decrypt private key. Invalid private " +
-                    "key password.", e);
+        } else {
+            throw new InvalidKeyPairException("Could not decrypt private key. Provided key " +
+                    "is not a PKCS8 encrypted private key.");
         }
 
         try {
@@ -237,6 +233,22 @@ public class Crypto {
                     e);
         } finally {
             org.bouncycastle.util.Properties.removeThreadOverride(PROP_ALLOW_UNSAFE_INT);
+        }
+    }
+
+    private static PrivateKeyInfo decryptPrivateKey(PKCS8EncryptedPrivateKeyInfo epkInfo,
+            char[] password) throws InvalidPasswordException, CryptoSystemException {
+        try {
+            InputDecryptorProvider decryptor = new JceOpenSSLPKCS8DecryptorProviderBuilder()
+                    .setProvider("BC")
+                    .build(password);
+            return epkInfo.decryptPrivateKeyInfo(decryptor);
+        } catch (OperatorCreationException e) {
+            throw new CryptoSystemException("Could not decrypt private key. Creation of PKCS8 " +
+                    "decryptor failed.", e);
+        } catch (PKCSException e) {
+            throw new InvalidPasswordException("Could not decrypt private key. Invalid private " +
+                    "key password.", e);
         }
     }
 
