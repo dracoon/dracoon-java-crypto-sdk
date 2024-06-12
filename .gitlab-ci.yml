@@ -1,6 +1,11 @@
 variables:
   ALLOW_QUALITY_GATE_FAILURE: 'false'
 
+default:
+  id_tokens:
+    ID_TOKEN:
+      aud: "https://$VAULT_DOMAIN"
+
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
