@@ -1,4 +1,6 @@
 variables:
+  JAVA_BUILD_IMAGE_VERSION: maven:3-eclipse-temurin-17
+  SONAR_IMAGE_VERSION: 5.0.1
   ALLOW_QUALITY_GATE_FAILURE: 'false'
 
 default:
@@ -22,7 +24,7 @@ stages:
   - rollout
 
 image:
-  name: maven:3-eclipse-temurin-17
+  name: ${JAVA_BUILD_IMAGE_VERSION}
 
 .job-template:
   secrets:
@@ -104,11 +106,43 @@ integration-test:
     reports:
       junit: target/failsafe-reports/TEST-*.xml
 
+sonar:
+  stage: analyze
+  image:
+    name: sonarsource/sonar-scanner-cli:${SONAR_IMAGE_VERSION}
+    entrypoint: [""]
+  needs:
+    - build
+    - unit-test
+    - integration-test
+  secrets:
+    SONAR_DOMAIN:
+      vault: Sonar/domain@Build-Environment
+      file: false
+    SONAR_TOKEN:
+      vault: Sonar/token@Build-Environment
+      file: false
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+    GIT_DEPTH: 0
+  cache:
+    key: $CI_JOB_NAME
+    paths:
+      - .sonar/cache
+  script:
+    - ./sonar.sh
+  rules:
+    - if: $ALLOW_QUALITY_GATE_FAILURE == 'true' || ($CI_COMMIT_TAG == null && $CI_COMMIT_REF_NAME != 'main')
+      when: on_success
+      allow_failure: true
+    - allow_failure: false
+
 deploy-development:
   extends: .job-template
   stage: deploy
   needs:
     - job: build
+    - job: sonar
       artifacts: false
   except:
     - tags
@@ -120,6 +154,7 @@ deploy-release:
   stage: deploy
   needs:
     - job: build
+    - job: sonar
       artifacts: false
   only:
     - tags
@@ -131,6 +166,7 @@ rollout:
   stage: rollout
   needs:
     - job: build
+    - job: sonar
       artifacts: false
   only:
     - tags
