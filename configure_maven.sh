@@ -15,29 +15,14 @@ if [ -z "${ARTIFACTORY_PASSWORD}" ]; then
     exit 3
 fi
 
-if [ -z "${DEPENDENCY_CHECK_NIST_NVD_API_KEY}" ]; then
-    echo "Environment variable DEPENDENCY_CHECK_NIST_NVD_API_KEY is not set. Aborting ..."
-    exit 4
-fi
-
-if [ -z "${SONAR_DOMAIN}" ]; then
-    echo "Environment variable SONAR_DOMAIN is not set. Aborting ..."
-    exit 5
-fi
-
-if [ -z "${SONAR_TOKEN}" ]; then
-    echo "Environment variable SONAR_TOKEN is not set. Aborting ..."
-    exit 6
-fi
-
 if [ -z "${SONATYPE_OSSRH_REPO_USERNAME}" ]; then
     echo "Environment variable SONATYPE_OSSRH_REPO_USERNAME is not set. Aborting ..."
-    exit 7
+    exit 4
 fi
 
 if [ -z "${SONATYPE_OSSRH_REPO_TOKEN}" ]; then
     echo "Environment variable SONATYPE_OSSRH_REPO_TOKEN is not set. Aborting ..."
-    exit 8
+    exit 5
 fi
 
 mkdir -p ~/.m2
