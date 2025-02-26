@@ -52,8 +52,6 @@
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>3.2.5</maven-failsafe-plugin.version>
         <maven-jacoco-plugin.version>0.8.11</maven-jacoco-plugin.version>
-        <maven-dependency-check-plugin.version>9.0.9</maven-dependency-check-plugin.version>
-        <maven-sonar-plugin.version>3.10.0.2594</maven-sonar-plugin.version>
         <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
         <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
         <maven-nexus-staging-plugin.version>1.6.13</maven-nexus-staging-plugin.version>
@@ -64,21 +62,6 @@
         <!-- test dependencies versions -->
         <junit.version>4.13.2</junit.version>
         <gson.version>2.9.0</gson.version>
-
-        <!-- sonar -->
-        <sonar.host.url>https://${sonar.domain}</sonar.host.url>
-        <sonar.projectKey>dracoon-java-crypto-sdk</sonar.projectKey>
-        <sonar.projectName>DRACOON Java Crypto SDK</sonar.projectName>
-        <sonar.projectVersion>${project.version}</sonar.projectVersion>
-        <sonar.scm.provider>git</sonar.scm.provider>
-        <sonar.scm.revision>unknown</sonar.scm.revision> <!-- Overwritten by GitLab pipeline -->
-        <sonar.branch.name>unknown</sonar.branch.name> <!-- Overwritten by GitLab pipeline -->
-        <sonar.sources>src/main/java/</sonar.sources>
-        <sonar.tests>src/test/java/</sonar.tests>
-        <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.dependencyCheck.htmlReportPath>target/dependency-check-reports/dependency-check-report.html</sonar.dependencyCheck.htmlReportPath>
-        <sonar.dependencyCheck.jsonReportPath>target/dependency-check-reports/dependency-check-report.json</sonar.dependencyCheck.jsonReportPath>
-        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
     </properties>
 
     <dependencies>
@@ -139,16 +122,6 @@
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${maven-jacoco-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.owasp</groupId>
-                    <artifactId>dependency-check-maven</artifactId>
-                    <version>${maven-dependency-check-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.sonarsource.scanner.maven</groupId>
-                    <artifactId>sonar-maven-plugin</artifactId>
-                    <version>${maven-sonar-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -256,25 +229,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <configuration>
-                    <nvdApiKey>${dependencyCheck.nistNvdApiKey}</nvdApiKey>
-                    <dataDirectory>target/dependency-check-data</dataDirectory>
-                    <outputDirectory>target/dependency-check-reports</outputDirectory>
-                    <formats>
-                        <format>HTML</format>
-                        <format>JSON</format>
-                    </formats>
-                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                    <suppressionFile>dependency-check-suppressions.xml</suppressionFile>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.sonarsource.scanner.maven</groupId>
-                <artifactId>sonar-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

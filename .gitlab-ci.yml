@@ -1,5 +1,16 @@
 variables:
+  JAVA_BUILD_IMAGE_VERSION: maven:3-eclipse-temurin-17
+
+  DEPENDENCY_SCANNING_IMAGE_VERSION: 5
+  SECRET_DETECTION_IMAGE_VERSION: 6
+
+  SONAR_IMAGE_VERSION: 5.0.1
   ALLOW_QUALITY_GATE_FAILURE: 'false'
+
+  VULNERABILITY_EVALUATION_IMAGE_VERSION: 1.1.3
+  ALLOW_VULNERABILITY_EVALUATION_FAILURE: 'false'
+  VULNERABILITY_EVALUATION_SEVERITY: 'high'
+  VULNERABILITY_EVALUATION_GITLAB_DISMISSER_IDS: '18,20' # IDs of Florian Scheuer and Octavio Simone
 
 default:
   id_tokens:
@@ -17,13 +28,12 @@ workflow:
 stages:
   - build
   - test
-  - report
   - analyze
   - deploy
   - rollout
 
 image:
-  name: maven:3-eclipse-temurin-17
+  name: ${JAVA_BUILD_IMAGE_VERSION}
 
 .job-template:
   secrets:
@@ -35,15 +45,6 @@ image:
       file: false
     ARTIFACTORY_PASSWORD:
       vault: Artifactory/user-write-password@Build-Environment
-      file: false
-    DEPENDENCY_CHECK_NIST_NVD_API_KEY:
-      vault: nist-nvd/api-key@Build-Environment
-      file: false
-    SONAR_DOMAIN:
-      vault: Sonar/domain@Build-Environment
-      file: false
-    SONAR_TOKEN:
-      vault: Sonar/token@Build-Environment
       file: false
     SONATYPE_OSSRH_SIGN_KEY_NAME:
       vault: sonatype-ossrh-signing/name@Build-Environment
@@ -79,7 +80,7 @@ build:
     paths:
       - target
 
-unit test:
+unit-test:
   extends: .job-template
   stage: test
   needs:
@@ -97,7 +98,7 @@ unit test:
     reports:
       junit: target/surefire-reports/TEST-*.xml
 
-integration test:
+integration-test:
   extends: .job-template
   stage: test
   needs:
@@ -114,39 +115,99 @@ integration test:
     reports:
       junit: target/failsafe-reports/TEST-*.xml
 
-dependencies check:
-  extends: .job-template
-  stage: report
-  needs:
-    - job: build
+dependency-scan:
+  stage: test
+  image:
+    name: registry.gitlab.com/security-products/gemnasium-maven:${DEPENDENCY_SCANNING_IMAGE_VERSION}
+    entrypoint: [""]
   script:
-    - mvn dependency-check:check
-  cache:
-    - !reference [.job-template, cache]
-    - key: dependency-check-data
-      paths:
-        - target/dependency-check-data
+    - /analyzer run
   artifacts:
     paths:
-      - target/dependency-check-reports
+      - 'gl-dependency-scanning-report.json'
+    reports:
+      dependency_scanning: 'gl-dependency-scanning-report.json'
+  allow_failure: false
+
+secret-detection:
+  stage: test
+  image:
+    name: registry.gitlab.com/security-products/secrets:${SECRET_DETECTION_IMAGE_VERSION}
+    entrypoint: [""]
+  script:
+    - /analyzer run
+  artifacts:
+    paths:
+      - 'gl-secret-detection-report.json'
+    reports:
+      secret_detection: 'gl-secret-detection-report.json'
+  allow_failure: false
 
 sonar:
-  extends: .job-template
   stage: analyze
+  image:
+    name: sonarsource/sonar-scanner-cli:${SONAR_IMAGE_VERSION}
+    entrypoint: [""]
   needs:
-    - job: build
-    - job: unit test
-    - job: integration test
-    - job: dependencies check
+    - build
+    - unit-test
+    - integration-test
+  secrets:
+    SONAR_DOMAIN:
+      vault: Sonar/domain@Build-Environment
+      file: false
+    SONAR_TOKEN:
+      vault: Sonar/token@Build-Environment
+      file: false
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+    GIT_DEPTH: 0
+  cache:
+    key: $CI_JOB_NAME
+    paths:
+      - .sonar/cache
   script:
-    - mvn -Dsonar.scm.revision=$CI_COMMIT_SHA -Dsonar.branch.name=$CI_COMMIT_REF_NAME sonar:sonar
+    - ./sonar.sh
   rules:
     - if: $ALLOW_QUALITY_GATE_FAILURE == 'true' || ($CI_COMMIT_TAG == null && $CI_COMMIT_REF_NAME != 'main')
       when: on_success
       allow_failure: true
     - allow_failure: false
 
-deploy development:
+vulnerability-evaluation:
+  stage: analyze
+  image:
+    name: docker-release.${ARTIFACTORY_DOMAIN}/pipeline-integration-vulnerability-evaluation:${VULNERABILITY_EVALUATION_IMAGE_VERSION}
+    entrypoint: [""]
+  needs:
+    - dependency-scan
+  secrets:
+    ARTIFACTORY_DOMAIN:
+      vault: Artifactory/domain@Build-Environment
+      file: false
+    GITLAB_ACCESS_TOKEN:
+      vault: gitlab/vulnerability-evaluation-token@Build-Environment
+      file: false
+  variables:
+    LOG_LEVEL: 'info'
+    SEVERITY: ${VULNERABILITY_EVALUATION_SEVERITY}
+    DEPENDENCY_SCANNING_ENABLED: 'true'
+    DEPENDENCY_SCANNING_REPORT: 'gl-dependency-scanning-report.json'
+    CONTAINER_SCANNING_ENABLED: 'false'
+    CONTAINER_SCANNING_REPORT: ''
+    GITLAB_DISMISSER_IDS: ${VULNERABILITY_EVALUATION_GITLAB_DISMISSER_IDS}
+    GITLAB_PROJECT_PATH: ${CI_PROJECT_PATH}
+  script:
+    - cd /usr/share/dracoon/pipeline-integration-vulnerability-evaluation
+    - cp ${CI_PROJECT_DIR}/gl-dependency-scanning-report.json .
+    - python ${PYTHON_OPTS} -u -m pipeline_integration_vulnerability_evaluation.main
+  rules:
+    - if: $ALLOW_VULNERABILITY_EVALUATION_FAILURE == 'true' || ($CI_COMMIT_TAG == null && $CI_COMMIT_REF_NAME != 'main')
+      when: on_success
+      allow_failure: true
+    - allow_failure: false
+
+deploy-development:
   extends: .job-template
   stage: deploy
   needs:
@@ -158,7 +219,7 @@ deploy development:
   script:
     - mvn -Pdevelopment deploy -DskipTests
 
-deploy release:
+deploy-release:
   extends: .job-template
   stage: deploy
   needs:
