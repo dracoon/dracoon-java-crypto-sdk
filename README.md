@@ -24,22 +24,22 @@ Maven: Add this dependency to your pom.xml:
 <dependency>
     <groupId>com.dracoon</groupId>
     <artifactId>dracoon-crypto-sdk</artifactId>
-    <version>3.0.1</version>
+    <version>3.0.2</version>
 </dependency>
 ```
 
 Gradle: Add this dependency to your build.gradle:
 ```groovy
-compile 'com.dracoon:dracoon-crypto-sdk:3.0.1'
+compile 'com.dracoon:dracoon-crypto-sdk:3.0.2'
 ```
 
 JAR import: The latest JAR can be found [here](
 https://github.com/dracoon/dracoon-java-crypto-sdk/releases).
 
 Note that you also need to include the following dependencies:
-1. Bouncy Castle PKIX/CMS/...: https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk18on:1.78.1
-2. Bouncy Castle Provider: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on:1.78.1
-3. Bouncy Castle Utils: https://mvnrepository.com/artifact/org.bouncycastle/bcutil-jdk18on:1.78.1
+1. Bouncy Castle PKIX/CMS/...: https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk18on:1.80
+2. Bouncy Castle Provider: https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on:1.80
+3. Bouncy Castle Utils: https://mvnrepository.com/artifact/org.bouncycastle/bcutil-jdk18on:1.80
 
 #### Java JCE Setup
 
